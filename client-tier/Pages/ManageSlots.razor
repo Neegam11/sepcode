@@ -1,0 +1,171 @@
+@page "/manage-slots"
+@inject DoctorService DoctorService
+@inject StaffService StaffService
+@inject AppointmentService AppointmentService
+
+<h1 style="margin-bottom: 1.5rem;">⏰ Manage Available Slots</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+}
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+    <div class="card">
+        <h3 class="card-title" style="margin-bottom: 1rem;">Create New Slot</h3>
+        <div class="form-group">
+            <label class="form-label">Doctor</label>
+            <select class="form-control" @bind="newSlot.DoctorId">
+                <option value="0">Select doctor...</option>
+                @foreach (var doctor in doctors)
+                {
+                    <option value="@doctor.DoctorId">Dr. @doctor.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" value="@newSlot.Date" @onchange="@(e => newSlot.Date = e.Value?.ToString() ?? "")" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input type="time" class="form-control" value="@newSlot.StartTime" @onchange="@(e => newSlot.StartTime = e.Value?.ToString() ?? "")" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input type="time" class="form-control" value="@newSlot.EndTime" @onchange="@(e => newSlot.EndTime = e.Value?.ToString() ?? "")" />
+        </div>
+        <button class="btn btn-primary" @onclick="CreateSlot" style="width: 100%;">
+            Create Slot
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Available Slots</h3>
+            <select class="form-control" style="width: auto;" value="@filterDoctorId" @onchange="OnDoctorFilterChanged">
+                <option value="0">All Doctors</option>
+                @foreach (var doctor in doctors)
+                {
+                    <option value="@doctor.DoctorId">Dr. @doctor.Name</option>
+                }
+            </select>
+        </div>
+
+        @if (isLoading)
+        {
+            <p style="text-align: center; padding: 2rem;">Loading slots...</p>
+        }
+        else if (!slots.Any())
+        {
+            <p style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                No available slots found.
+            </p>
+        }
+        else
+        {
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var slot in slots)
+                        {
+                            <tr>
+                                <td>Dr. @slot.DoctorName</td>
+                                <td>@slot.Date</td>
+                                <td>@slot.StartTime - @slot.EndTime</td>
+                                <td>
+                                    <span class="badge @(slot.Status == "AVAILABLE" ? "badge-success" : "badge-warning")">
+                                        @slot.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (slot.Status == "AVAILABLE")
+                                    {
+                                        <button class="btn btn-danger" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;"
+                                                @onclick="() => DeleteSlot(slot.SlotId)">
+                                            Delete
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<DoctorModel> doctors = new();
+    private List<SlotModel> slots = new();
+    private SlotModel newSlot = new() { Date = DateTime.Today.ToString("yyyy-MM-dd"), StartTime = "09:00", EndTime = "09:30" };
+    private long filterDoctorId;
+    private bool isLoading = true;
+    private string? message;
+    private bool isSuccess;
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctors = await DoctorService.GetAllDoctorsAsync();
+        await LoadSlots();
+    }
+
+    private async Task OnDoctorFilterChanged(ChangeEventArgs e)
+    {
+        if (long.TryParse(e.Value?.ToString(), out var doctorId))
+        {
+            filterDoctorId = doctorId;
+        }
+        else
+        {
+            filterDoctorId = 0;
+        }
+        await LoadSlots();
+    }
+
+    private async Task LoadSlots()
+    {
+        isLoading = true;
+        slots = await AppointmentService.GetAvailableSlotsAsync(filterDoctorId > 0 ? filterDoctorId : null, null);
+        isLoading = false;
+    }
+
+    private async Task CreateSlot()
+    {
+        if (newSlot.DoctorId == 0)
+        {
+            message = "Please select a doctor";
+            isSuccess = false;
+            return;
+        }
+
+        var (success, msg) = await StaffService.CreateSlotAsync(newSlot);
+        isSuccess = success;
+        message = msg;
+
+        if (success)
+        {
+            newSlot = new SlotModel { Date = DateTime.Today.ToString("yyyy-MM-dd"), StartTime = "09:00", EndTime = "09:30" };
+            await LoadSlots();
+        }
+    }
+
+    private async Task DeleteSlot(long slotId)
+    {
+        var (success, msg) = await StaffService.DeleteSlotAsync(slotId);
+        isSuccess = success;
+        message = msg;
+        if (success) await LoadSlots();
+    }
+}
+

@@ -1,0 +1,159 @@
+@page "/my-appointments"
+@inject AuthService AuthService
+@inject AppointmentService AppointmentService
+
+<h1 style="margin-bottom: 1.5rem;">📋 My Appointments</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+}
+
+<div class="card">
+    @if (isLoading)
+    {
+        <p style="text-align: center; padding: 2rem;">Loading appointments...</p>
+    }
+    else if (!appointments.Any())
+    {
+        <p style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            You have no appointments yet. <a href="/book-appointment">Book your first appointment</a>
+        </p>
+    }
+    else
+    {
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Doctor</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in appointments)
+                    {
+                        <tr>
+                            <td>@appointment.Date</td>
+                            <td>@appointment.StartTime - @appointment.EndTime</td>
+                            <td>
+                                <strong>Dr. @appointment.DoctorName</strong><br />
+                                <small style="color: var(--text-secondary);">@appointment.DoctorSpecialization</small>
+                            </td>
+                            <td>@appointment.Type</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(appointment.Status)">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td>
+                                @if (CanCancel(appointment))
+                                {
+                                    <button class="btn btn-danger" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;"
+                                            @onclick="() => ShowCancelModal(appointment)">
+                                        Cancel
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@if (showCancelModal && appointmentToCancel != null)
+{
+    <div class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Cancel Appointment</h3>
+                <button class="modal-close" @onclick="() => showCancelModal = false">&times;</button>
+            </div>
+            <p>Are you sure you want to cancel your appointment on <strong>@appointmentToCancel.Date</strong> at <strong>@appointmentToCancel.StartTime</strong>?</p>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Reason for cancellation</label>
+                <textarea class="form-control" @bind="cancelReason" rows="3" placeholder="Please provide a reason..."></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-danger" @onclick="ConfirmCancel" disabled="@isCancelling">
+                    @(isCancelling ? "Cancelling..." : "Confirm Cancel")
+                </button>
+                <button class="btn btn-outline" @onclick="() => showCancelModal = false">Keep Appointment</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<AppointmentModel> appointments = new();
+    private bool isLoading = true;
+    private string? message;
+    private bool isSuccess;
+    private bool showCancelModal;
+    private AppointmentModel? appointmentToCancel;
+    private string cancelReason = "";
+    private bool isCancelling;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAppointments();
+    }
+
+    private async Task LoadAppointments()
+    {
+        isLoading = true;
+        appointments = await AppointmentService.GetPatientAppointmentsAsync(AuthService.CurrentUser!.UserId);
+        appointments = appointments.OrderByDescending(a => a.Date).ThenByDescending(a => a.StartTime).ToList();
+        isLoading = false;
+    }
+
+    private bool CanCancel(AppointmentModel appointment)
+    {
+        return appointment.Status == "SCHEDULED" || appointment.Status == "CONFIRMED";
+    }
+
+    private void ShowCancelModal(AppointmentModel appointment)
+    {
+        appointmentToCancel = appointment;
+        cancelReason = "";
+        showCancelModal = true;
+    }
+
+    private async Task ConfirmCancel()
+    {
+        if (appointmentToCancel == null) return;
+
+        isCancelling = true;
+        var (success, msg) = await AppointmentService.CancelAppointmentAsync(
+            appointmentToCancel.AppointmentId, "PATIENT", cancelReason);
+
+        isSuccess = success;
+        message = msg;
+        showCancelModal = false;
+        isCancelling = false;
+
+        if (success)
+        {
+            await LoadAppointments();
+        }
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "COMPLETED" => "badge-success",
+            "SCHEDULED" or "CONFIRMED" => "badge-primary",
+            "CANCELLED_BY_PATIENT" or "CANCELLED_BY_DOCTOR" => "badge-danger",
+            "MISSED" => "badge-warning",
+            _ => "badge-primary"
+        };
+    }
+}
+

@@ -1,0 +1,132 @@
+@page "/reports"
+@inject StaffService StaffService
+@inject DoctorService DoctorService
+
+<h1 style="margin-bottom: 1.5rem;">📈 Schedule Reports</h1>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h3 class="card-title" style="margin-bottom: 1rem;">Generate Report</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: end;">
+        <div class="form-group" style="margin: 0;">
+            <label class="form-label">Start Date</label>
+            <input type="date" class="form-control" value="@startDate" @onchange="@(e => startDate = e.Value?.ToString() ?? "")" />
+        </div>
+        <div class="form-group" style="margin: 0;">
+            <label class="form-label">End Date</label>
+            <input type="date" class="form-control" value="@endDate" @onchange="@(e => endDate = e.Value?.ToString() ?? "")" />
+        </div>
+        <div class="form-group" style="margin: 0;">
+            <label class="form-label">Doctor (Optional)</label>
+            <select class="form-control" @bind="selectedDoctorId">
+                <option value="0">All Doctors</option>
+                @foreach (var doctor in doctors)
+                {
+                    <option value="@doctor.DoctorId">Dr. @doctor.Name</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-primary" @onclick="GenerateReport">Generate Report</button>
+    </div>
+</div>
+
+@if (reportData != null)
+{
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">📅</div>
+            <div>
+                <div class="stat-value">@GetReportValue("totalAppointments")</div>
+                <div class="stat-label">Total Appointments</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div>
+                <div class="stat-value">@GetReportValue("completedAppointments")</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">❌</div>
+            <div>
+                <div class="stat-value">@GetReportValue("cancelledAppointments")</div>
+                <div class="stat-label">Cancelled</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">⚠️</div>
+            <div>
+                <div class="stat-value">@GetReportValue("missedAppointments")</div>
+                <div class="stat-label">Missed</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title" style="margin-bottom: 1rem;">Doctor Summary</h3>
+        @if (doctorSummaries.Any())
+        {
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Total Appointments</th>
+                            <th>Available Slots</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var summary in doctorSummaries)
+                        {
+                            <tr>
+                                <td>@summary.GetValueOrDefault("doctorName", "")</td>
+                                <td>@summary.GetValueOrDefault("totalAppointments", 0)</td>
+                                <td>@summary.GetValueOrDefault("availableSlots", 0)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p style="color: var(--text-secondary);">No doctor data available.</p>
+        }
+    </div>
+}
+
+@code {
+    private List<DoctorModel> doctors = new();
+    private Dictionary<string, object>? reportData;
+    private List<Dictionary<string, object>> doctorSummaries = new();
+    private string startDate = DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd");
+    private string endDate = DateTime.Today.ToString("yyyy-MM-dd");
+    private long selectedDoctorId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctors = await DoctorService.GetAllDoctorsAsync();
+    }
+
+    private async Task GenerateReport()
+    {
+        reportData = await StaffService.GenerateReportAsync(startDate, endDate, selectedDoctorId > 0 ? selectedDoctorId : null);
+        
+        if (reportData != null && reportData.TryGetValue("doctorSummaries", out var summaries))
+        {
+            if (summaries is System.Text.Json.JsonElement jsonElement)
+            {
+                doctorSummaries = jsonElement.EnumerateArray()
+                    .Select(e => e.EnumerateObject().ToDictionary(p => p.Name, p => (object)p.Value.ToString()!))
+                    .ToList();
+            }
+        }
+    }
+
+    private string GetReportValue(string key)
+    {
+        if (reportData == null) return "0";
+        return reportData.TryGetValue(key, out var value) ? value?.ToString() ?? "0" : "0";
+    }
+}
+

@@ -1,0 +1,172 @@
+@page "/doctor-schedule"
+@page "/doctor-appointments"
+@inject AuthService AuthService
+@inject AppointmentService AppointmentService
+
+<h1 style="margin-bottom: 1.5rem;">📆 My Schedule</h1>
+
+<div class="card" style="margin-bottom: 1rem;">
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="form-group" style="margin: 0;">
+            <input type="date" class="form-control" value="@selectedDate" @onchange="OnDateChanged" />
+        </div>
+        <button class="btn btn-primary" @onclick="LoadSchedule">View Schedule</button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Appointments for @selectedDate</h2>
+    </div>
+
+    @if (isLoading)
+    {
+        <p style="text-align: center; padding: 2rem;">Loading schedule...</p>
+    }
+    else if (!appointments.Any())
+    {
+        <p style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            No appointments scheduled for this date.
+        </p>
+    }
+    else
+    {
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in appointments.OrderBy(a => a.StartTime))
+                    {
+                        <tr>
+                            <td>@appointment.StartTime - @appointment.EndTime</td>
+                            <td>@appointment.PatientName</td>
+                            <td>@appointment.Type</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(appointment.Status)">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td style="display: flex; gap: 0.5rem;">
+                                @if (appointment.Status == "SCHEDULED" || appointment.Status == "CONFIRMED")
+                                {
+                                    <button class="btn btn-success" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;"
+                                            @onclick="() => MarkCompleted(appointment)">
+                                        Complete
+                                    </button>
+                                    <button class="btn btn-danger" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;"
+                                            @onclick="() => ShowCancelModal(appointment)">
+                                        Cancel
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@if (showCancelModal && appointmentToCancel != null)
+{
+    <div class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Cancel Appointment</h3>
+                <button class="modal-close" @onclick="() => showCancelModal = false">&times;</button>
+            </div>
+            <p>Cancel appointment with <strong>@appointmentToCancel.PatientName</strong> at <strong>@appointmentToCancel.StartTime</strong>?</p>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Reason for cancellation</label>
+                <textarea class="form-control" @bind="cancelReason" rows="3" placeholder="Please provide a reason..."></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-danger" @onclick="ConfirmCancel">Confirm Cancel</button>
+                <button class="btn btn-outline" @onclick="() => showCancelModal = false">Keep Appointment</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<AppointmentModel> appointments = new();
+    private string selectedDate = DateTime.Today.ToString("yyyy-MM-dd");
+    private bool isLoading = true;
+    private string? message;
+    private bool isSuccess;
+    private bool showCancelModal;
+    private AppointmentModel? appointmentToCancel;
+    private string cancelReason = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSchedule();
+    }
+
+    private async Task OnDateChanged(ChangeEventArgs e)
+    {
+        selectedDate = e.Value?.ToString() ?? DateTime.Today.ToString("yyyy-MM-dd");
+        await LoadSchedule();
+    }
+
+    private async Task LoadSchedule()
+    {
+        isLoading = true;
+        appointments = await AppointmentService.GetDoctorDailyScheduleAsync(AuthService.CurrentUser!.UserId, selectedDate);
+        isLoading = false;
+    }
+
+    private async Task MarkCompleted(AppointmentModel appointment)
+    {
+        var (success, msg) = await AppointmentService.UpdateAppointmentStatusAsync(appointment.AppointmentId, "COMPLETED");
+        isSuccess = success;
+        message = msg;
+        if (success) await LoadSchedule();
+    }
+
+    private void ShowCancelModal(AppointmentModel appointment)
+    {
+        appointmentToCancel = appointment;
+        cancelReason = "";
+        showCancelModal = true;
+    }
+
+    private async Task ConfirmCancel()
+    {
+        if (appointmentToCancel == null) return;
+
+        var (success, msg) = await AppointmentService.CancelAppointmentAsync(
+            appointmentToCancel.AppointmentId, "DOCTOR", cancelReason);
+
+        isSuccess = success;
+        message = msg;
+        showCancelModal = false;
+
+        if (success) await LoadSchedule();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "COMPLETED" => "badge-success",
+            "SCHEDULED" or "CONFIRMED" => "badge-primary",
+            "CANCELLED_BY_PATIENT" or "CANCELLED_BY_DOCTOR" => "badge-danger",
+            _ => "badge-primary"
+        };
+    }
+}
+

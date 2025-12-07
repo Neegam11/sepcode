@@ -1,0 +1,437 @@
+@page "/manage-appointments"
+@inject AuthService AuthService
+@inject AppointmentService AppointmentService
+@inject StaffService StaffService
+@inject DoctorService DoctorService
+
+<h1 style="margin-bottom: 1.5rem;">📋 Manage Appointments</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">All Appointments</h2>
+        <div>
+            <select class="form-control" style="width: auto; display: inline-block;" value="@statusFilter" @onchange="OnStatusFilterChanged">
+                <option value="">All Statuses</option>
+                <option value="SCHEDULED">Scheduled</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <p style="text-align: center; padding: 2rem;">Loading appointments...</p>
+    }
+    else if (!filteredAppointments.Any())
+    {
+        <p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No appointments found.</p>
+    }
+    else
+    {
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in filteredAppointments)
+                    {
+                        <tr>
+                            <td>#@appointment.AppointmentId</td>
+                            <td>@appointment.Date</td>
+                            <td>@appointment.StartTime - @appointment.EndTime</td>
+                            <td>@appointment.PatientName</td>
+                            <td>Dr. @appointment.DoctorName</td>
+                            <td>@appointment.Type</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(appointment.Status)">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                    @if (appointment.Status == "SCHEDULED")
+                                    {
+                                        <button class="btn btn-success" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                                @onclick="@(() => UpdateAppointmentStatus(appointment, "CONFIRMED"))">
+                                            ✓ Confirm
+                                        </button>
+                                        <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                                @onclick="() => ShowReassignModal(appointment)">
+                                            🔄 Reassign
+                                        </button>
+                                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                                @onclick="() => ShowCancelModal(appointment)">
+                                            ✕ Cancel
+                                        </button>
+                                    }
+                                    else if (appointment.Status == "CONFIRMED")
+                                    {
+                                        <button class="btn btn-success" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                                @onclick="@(() => UpdateAppointmentStatus(appointment, "COMPLETED"))">
+                                            ✓ Complete
+                                        </button>
+                                        <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                                @onclick="() => ShowReassignModal(appointment)">
+                                            🔄 Reassign
+                                        </button>
+                                        <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                                @onclick="() => ShowCancelModal(appointment)">
+                                            ✕ Cancel
+                                        </button>
+                                    }
+                                    <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
+                                            @onclick="() => ShowUpdateModal(appointment)">
+                                        ✏️ Edit
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@* Update Status Modal *@
+@if (showUpdateModal && selectedAppointment != null)
+{
+    <div class="modal-overlay">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Update Appointment #@selectedAppointment.AppointmentId</h3>
+                <button class="modal-close" @onclick="CloseModals">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                <p><strong>Patient:</strong> @selectedAppointment.PatientName</p>
+                <p><strong>Doctor:</strong> Dr. @selectedAppointment.DoctorName</p>
+                <p><strong>Date:</strong> @selectedAppointment.Date at @selectedAppointment.StartTime</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Update Status</label>
+                <select class="form-control" @bind="newStatus">
+                    <option value="">-- Select Status --</option>
+                    <option value="SCHEDULED">Scheduled</option>
+                    <option value="CONFIRMED">Confirmed</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="MISSED">Missed</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Appointment Type</label>
+                <select class="form-control" @bind="newType">
+                    <option value="">-- Keep Current --</option>
+                    <option value="CONSULTATION">Consultation</option>
+                    <option value="FOLLOW_UP">Follow-up</option>
+                    <option value="CHECKUP">Check-up</option>
+                    <option value="EMERGENCY">Emergency</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-primary" @onclick="ConfirmUpdate" disabled="@(string.IsNullOrEmpty(newStatus) && string.IsNullOrEmpty(newType))">
+                    Save Changes
+                </button>
+                <button class="btn btn-outline" @onclick="CloseModals">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Reassign Doctor Modal *@
+@if (showReassignModal && selectedAppointment != null)
+{
+    <div class="modal-overlay">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🔄 Reassign Appointment</h3>
+                <button class="modal-close" @onclick="CloseModals">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                <p><strong>Patient:</strong> @selectedAppointment.PatientName</p>
+                <p><strong>Current Doctor:</strong> Dr. @selectedAppointment.DoctorName (@selectedAppointment.DoctorSpecialization)</p>
+                <p><strong>Date:</strong> @selectedAppointment.Date at @selectedAppointment.StartTime - @selectedAppointment.EndTime</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select New Doctor</label>
+                <select class="form-control" @bind="newDoctorId">
+                    <option value="0">-- Select Doctor --</option>
+                    @foreach (var doctor in doctors.Where(d => d.DoctorId != selectedAppointment.DoctorId))
+                    {
+                        <option value="@doctor.DoctorId">Dr. @doctor.Name - @doctor.Specialization</option>
+                    }
+                </select>
+            </div>
+
+            @if (newDoctorId > 0)
+            {
+                <div class="form-group">
+                    <label class="form-label">Select New Time Slot (Optional)</label>
+                    @if (isLoadingSlots)
+                    {
+                        <p style="color: var(--text-secondary);">Loading available slots...</p>
+                    }
+                    else if (!availableSlots.Any())
+                    {
+                        <p style="color: var(--text-secondary);">No available slots for this doctor on @selectedAppointment.Date</p>
+                    }
+                    else
+                    {
+                        <select class="form-control" @bind="newSlotId">
+                            <option value="0">Keep current time slot</option>
+                            @foreach (var slot in availableSlots)
+                            {
+                                <option value="@slot.SlotId">@slot.Date - @slot.StartTime to @slot.EndTime</option>
+                            }
+                        </select>
+                    }
+                </div>
+            }
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-primary" @onclick="ConfirmReassign" disabled="@(newDoctorId == 0)">
+                    Reassign Appointment
+                </button>
+                <button class="btn btn-outline" @onclick="CloseModals">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Cancel Appointment Modal *@
+@if (showCancelModal && selectedAppointment != null)
+{
+    <div class="modal-overlay">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 class="modal-title">❌ Cancel Appointment</h3>
+                <button class="modal-close" @onclick="CloseModals">&times;</button>
+            </div>
+            
+            <p>Are you sure you want to cancel this appointment?</p>
+            
+            <div style="margin: 1rem 0; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                <p><strong>Patient:</strong> @selectedAppointment.PatientName</p>
+                <p><strong>Doctor:</strong> Dr. @selectedAppointment.DoctorName</p>
+                <p><strong>Date:</strong> @selectedAppointment.Date at @selectedAppointment.StartTime</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Cancellation Reason</label>
+                <textarea class="form-control" @bind="cancelReason" rows="3" placeholder="Enter reason for cancellation..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-danger" @onclick="ConfirmCancel">
+                    Confirm Cancellation
+                </button>
+                <button class="btn btn-outline" @onclick="CloseModals">Keep Appointment</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<AppointmentModel> appointments = new();
+    private List<AppointmentModel> filteredAppointments = new();
+    private List<DoctorModel> doctors = new();
+    private List<SlotModel> availableSlots = new();
+    private string statusFilter = "";
+    private bool isLoading = true;
+    private bool isLoadingSlots = false;
+    private string? message;
+    private bool isSuccess;
+    
+    // Modal states
+    private bool showUpdateModal;
+    private bool showReassignModal;
+    private bool showCancelModal;
+    private AppointmentModel? selectedAppointment;
+    
+    // Update form
+    private string newStatus = "";
+    private string newType = "";
+    
+    // Reassign form
+    private long newDoctorId;
+    private long newSlotId;
+    
+    // Cancel form
+    private string cancelReason = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctors = await DoctorService.GetAllDoctorsAsync();
+        await LoadAppointments();
+    }
+
+    private async Task LoadAppointments()
+    {
+        isLoading = true;
+        appointments = await StaffService.GetAllAppointmentsAsync();
+        FilterAppointments();
+        isLoading = false;
+    }
+
+    private void OnStatusFilterChanged(ChangeEventArgs e)
+    {
+        statusFilter = e.Value?.ToString() ?? "";
+        FilterAppointments();
+    }
+
+    private void FilterAppointments()
+    {
+        if (string.IsNullOrEmpty(statusFilter))
+        {
+            filteredAppointments = appointments.OrderByDescending(a => a.Date).ThenBy(a => a.StartTime).ToList();
+        }
+        else if (statusFilter == "CANCELLED")
+        {
+            filteredAppointments = appointments
+                .Where(a => a.Status.StartsWith("CANCELLED"))
+                .OrderByDescending(a => a.Date)
+                .ToList();
+        }
+        else
+        {
+            filteredAppointments = appointments
+                .Where(a => a.Status == statusFilter)
+                .OrderByDescending(a => a.Date)
+                .ToList();
+        }
+    }
+
+    private async Task UpdateAppointmentStatus(AppointmentModel appointment, string status)
+    {
+        var (success, msg) = await AppointmentService.UpdateAppointmentStatusAsync(
+            appointment.AppointmentId, status, AuthService.CurrentUser!.UserId);
+        isSuccess = success;
+        message = msg;
+        if (success) await LoadAppointments();
+    }
+
+    // Update Modal
+    private void ShowUpdateModal(AppointmentModel appointment)
+    {
+        selectedAppointment = appointment;
+        newStatus = "";
+        newType = "";
+        showUpdateModal = true;
+    }
+
+    private async Task ConfirmUpdate()
+    {
+        if (selectedAppointment == null) return;
+        
+        if (!string.IsNullOrEmpty(newStatus))
+        {
+            var (success, msg) = await AppointmentService.UpdateAppointmentStatusAsync(
+                selectedAppointment.AppointmentId, newStatus, AuthService.CurrentUser!.UserId);
+            isSuccess = success;
+            message = msg;
+        }
+        
+        CloseModals();
+        if (isSuccess) await LoadAppointments();
+    }
+
+    // Reassign Modal
+    private async Task ShowReassignModal(AppointmentModel appointment)
+    {
+        selectedAppointment = appointment;
+        newDoctorId = 0;
+        newSlotId = 0;
+        availableSlots = new();
+        showReassignModal = true;
+    }
+
+    private async Task LoadAvailableSlotsForDoctor()
+    {
+        if (newDoctorId > 0 && selectedAppointment != null)
+        {
+            isLoadingSlots = true;
+            availableSlots = await AppointmentService.GetAvailableSlotsAsync(newDoctorId, selectedAppointment.Date);
+            isLoadingSlots = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmReassign()
+    {
+        if (selectedAppointment == null || newDoctorId == 0) return;
+
+        var (success, msg) = await StaffService.ReassignAppointmentAsync(
+            selectedAppointment.AppointmentId, newDoctorId, newSlotId > 0 ? newSlotId : null);
+        
+        isSuccess = success;
+        message = msg;
+        CloseModals();
+
+        if (success) await LoadAppointments();
+    }
+
+    // Cancel Modal
+    private void ShowCancelModal(AppointmentModel appointment)
+    {
+        selectedAppointment = appointment;
+        cancelReason = "";
+        showCancelModal = true;
+    }
+
+    private async Task ConfirmCancel()
+    {
+        if (selectedAppointment == null) return;
+
+        var (success, msg) = await AppointmentService.CancelAppointmentAsync(
+            selectedAppointment.AppointmentId, "STAFF", cancelReason);
+
+        isSuccess = success;
+        message = msg;
+        CloseModals();
+
+        if (success) await LoadAppointments();
+    }
+
+    private void CloseModals()
+    {
+        showUpdateModal = false;
+        showReassignModal = false;
+        showCancelModal = false;
+        selectedAppointment = null;
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "COMPLETED" => "badge-success",
+            "SCHEDULED" => "badge-warning",
+            "CONFIRMED" => "badge-primary",
+            "MISSED" => "badge-danger",
+            _ when status.StartsWith("CANCELLED") => "badge-danger",
+            _ => "badge-primary"
+        };
+    }
+}
