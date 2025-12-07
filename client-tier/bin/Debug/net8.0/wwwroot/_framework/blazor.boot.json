@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "ClinicClient",
   "resources": {
-    "hash": "sha256-bcEAbDP4EFflaWRboUN9NxvntnLjKvkJZMhFmhT3pCU=",
+    "hash": "sha256-cyeLRpTVdpZPfAGz23pyQcHKzf1h+N7gMF5AJ+fNPwg=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-O/NCYcAN9uPocD7ns7AzF/cqx7f5vL1PTJCQs0vEXyk="
     },
@@ -214,10 +214,10 @@
       "mscorlib.wasm": "sha256-RLW/7NVuhoPfq151II3kX2kWHgBwQgpCw9aemQNg3to=",
       "netstandard.wasm": "sha256-lAg5WvTiA8wbsIwlr51xh0YWpXT9F5EX3Cnv+11O/mU=",
       "System.Private.CoreLib.wasm": "sha256-3O3muuRQwoLRecYRjfIFWUURvTjP4EmD2O8wYg2UDNY=",
-      "ClinicClient.wasm": "sha256-Fkxq+HJ5gG4YkqnNLNxnMW9nc5GDZ/f1FiRFkohv2gw="
+      "ClinicClient.wasm": "sha256-ZWxbCu/0qdC5LLqN3Bg+A1XOJX+XAr2E+S968mXO6wg="
     },
     "pdb": {
-      "ClinicClient.pdb": "sha256-6yqxuSs/u+Z+p1Z61XTjyKNCUb6jUGd/A4Mr5IT0Wac="
+      "ClinicClient.pdb": "sha256-3yzjUvfYVyG9Q6cgtojLLW1fKbxHluyF0H6UcUCsocM="
     }
   },
   "cacheBootResources": true,
