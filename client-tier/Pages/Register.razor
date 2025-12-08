@@ -5,25 +5,13 @@
 
 <div class="login-container">
     <div class="login-card" style="max-width: 480px;">
-        <h1 class="login-title">🏥 Create Account</h1>
-        <p class="login-subtitle">Register to book appointments</p>
+        <h1 class="login-title">🏥 Patient Registration</h1>
+        <p class="login-subtitle">Create your patient account to book appointments</p>
 
         @if (!string.IsNullOrEmpty(message))
         {
             <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
         }
-
-        <div class="user-type-selector">
-            <button class="user-type-btn @(userType == "PATIENT" ? "active" : "")" @onclick="@(() => SetUserType("PATIENT"))">
-                👤 Patient
-            </button>
-            <button class="user-type-btn @(userType == "DOCTOR" ? "active" : "")" @onclick="@(() => SetUserType("DOCTOR"))">
-                👨‍⚕️ Doctor
-            </button>
-            <button class="user-type-btn @(userType == "STAFF" ? "active" : "")" @onclick="@(() => SetUserType("STAFF"))">
-                👩‍💼 Staff
-            </button>
-        </div>
 
         <EditForm Model="@model" OnValidSubmit="HandleRegister">
             <div class="form-group">
@@ -34,41 +22,10 @@
                 <label class="form-label">Email</label>
                 <input type="email" class="form-control" @bind="model.Email" placeholder="Enter your email" required />
             </div>
-            @if (userType == "PATIENT")
-            {
-                <div class="form-group">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" class="form-control" @bind="model.Phone" placeholder="Enter your phone number" />
-                </div>
-            }
-            @if (userType == "DOCTOR")
-            {
-                <div class="form-group">
-                    <label class="form-label">Specialization</label>
-                    <select class="form-control" @bind="model.Specialization" required>
-                        <option value="">Select specialization</option>
-                        <option value="General">General</option>
-                        <option value="Cardiology">Cardiology</option>
-                        <option value="Dermatology">Dermatology</option>
-                        <option value="Neurology">Neurology</option>
-                        <option value="Orthopedics">Orthopedics</option>
-                        <option value="Pediatrics">Pediatrics</option>
-                        <option value="Psychiatry">Psychiatry</option>
-                    </select>
-                </div>
-            }
-            @if (userType == "STAFF")
-            {
-                <div class="form-group">
-                    <label class="form-label">Role</label>
-                    <select class="form-control" @bind="model.Role" required>
-                        <option value="">Select role</option>
-                        <option value="Receptionist">Receptionist</option>
-                        <option value="Administrator">Administrator</option>
-                        <option value="Manager">Manager</option>
-                    </select>
-                </div>
-            }
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-control" @bind="model.Phone" placeholder="Enter your phone number" />
+            </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
                 <input type="password" class="form-control" @bind="model.Password" placeholder="Create a password" required />
@@ -93,7 +50,6 @@
 
 @code {
     private RegisterModel model = new();
-    private string userType = "PATIENT";
     private string? message;
     private bool isSuccess;
     private bool isLoading;
@@ -104,13 +60,6 @@
         public string Email { get; set; } = "";
         public string Phone { get; set; } = "";
         public string Password { get; set; } = "";
-        public string Specialization { get; set; } = "";
-        public string Role { get; set; } = "";
-    }
-
-    private void SetUserType(string type)
-    {
-        userType = type;
     }
 
     private async Task HandleRegister()
@@ -118,9 +67,10 @@
         isLoading = true;
         message = null;
 
+        // Always register as PATIENT
         var (success, msg) = await AuthService.RegisterAsync(
             model.Name, model.Email, model.Phone, model.Password,
-            userType, model.Specialization, model.Role);
+            "PATIENT", null, null);
 
         isSuccess = success;
         message = msg;
@@ -134,4 +84,3 @@
         isLoading = false;
     }
 }
-

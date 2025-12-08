@@ -47,9 +47,13 @@
             </button>
         </EditForm>
 
-        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
-            Don't have an account? <a href="/register" style="color: var(--primary-color);">Register here</a>
-        </p>
+        @if (userType == "PATIENT")
+        {
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
+                Don't have an account? <a href="/register" style="color: var(--primary-color);">Register here</a>
+            </p>
+        }
+
     </div>
 </div>
 
@@ -104,4 +108,3 @@
     [Layout(typeof(EmptyLayout))]
     private class EmptyLayoutAttribute : Attribute { }
 }
-

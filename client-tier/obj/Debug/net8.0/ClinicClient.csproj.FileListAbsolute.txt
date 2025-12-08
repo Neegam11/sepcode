@@ -3164,9 +3164,6 @@ C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\4kxv
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\ljsa6fm48p-tptq2av103.gz
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\fzwm33dohq-lfu7j35m59.gz
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\mhawzycqki-oyz0vx2fzb.gz
-C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\a9k3bjnufa-zybc8h6ec7.gz
-C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\vffadpz11u-9ey8771moy.gz
-C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\ixr95qrf4c-s39f1u3wfk.gz
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\staticwebassets.development.json
@@ -3176,3 +3173,6 @@ C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\ClinicClient.dl
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\refint\ClinicClient.dll
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\ClinicClient.pdb
 C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\ref\ClinicClient.dll
+C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\a9k3bjnufa-jxm142m3tz.gz
+C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\vffadpz11u-kt1orsmu1h.gz
+C:\Users\fadum\IdeaProjects\sepcode\client-tier\obj\Debug\net8.0\compressed\ixr95qrf4c-4tdeijz0j9.gz
