@@ -1,0 +1,147 @@
+@page "/dashboard"
+@inject AuthService AuthService
+@inject AppointmentService AppointmentService
+@inject NotificationService NotificationService
+
+<h1 style="margin-bottom: 1.5rem;">Dashboard</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">📅</div>
+        <div>
+            <div class="stat-value">@totalAppointments</div>
+            <div class="stat-label">Total Appointments</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div>
+            <div class="stat-value">@completedAppointments</div>
+            <div class="stat-label">Completed</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange">⏳</div>
+        <div>
+            <div class="stat-value">@upcomingAppointments</div>
+            <div class="stat-label">Upcoming</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red">🔔</div>
+        <div>
+            <div class="stat-value">@unreadNotifications</div>
+            <div class="stat-label">Notifications</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recent Appointments</h2>
+    </div>
+    @if (recentAppointments.Any())
+    {
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        @if (AuthService.CurrentUser?.UserType != "PATIENT")
+                        {
+                            <th>Patient</th>
+                        }
+                        @if (AuthService.CurrentUser?.UserType != "DOCTOR")
+                        {
+                            <th>Doctor</th>
+                        }
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in recentAppointments.Take(5))
+                    {
+                        <tr>
+                            <td>@appointment.Date</td>
+                            <td>@appointment.StartTime - @appointment.EndTime</td>
+                            @if (AuthService.CurrentUser?.UserType != "PATIENT")
+                            {
+                                <td>@appointment.PatientName</td>
+                            }
+                            @if (AuthService.CurrentUser?.UserType != "DOCTOR")
+                            {
+                                <td>@appointment.DoctorName</td>
+                            }
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(appointment.Status)">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+            No appointments found.
+        </p>
+    }
+</div>
+
+@code {
+    private List<AppointmentModel> recentAppointments = new();
+    private int totalAppointments;
+    private int completedAppointments;
+    private int upcomingAppointments;
+    private int unreadNotifications;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var user = AuthService.CurrentUser;
+        if (user == null) return;
+
+        // Load appointments based on user type
+        if (user.UserType == "PATIENT")
+        {
+            recentAppointments = await AppointmentService.GetPatientAppointmentsAsync(user.UserId);
+        }
+        else if (user.UserType == "DOCTOR")
+        {
+            recentAppointments = await AppointmentService.GetDoctorAppointmentsAsync(user.UserId);
+        }
+        else
+        {
+            recentAppointments = await AppointmentService.GetAllAppointmentsAsync();
+        }
+
+        totalAppointments = recentAppointments.Count;
+        completedAppointments = recentAppointments.Count(a => a.Status == "COMPLETED");
+        upcomingAppointments = recentAppointments.Count(a => a.Status == "SCHEDULED" || a.Status == "CONFIRMED");
+
+        // Load notifications
+        var notifications = await NotificationService.GetUserNotificationsAsync(user.UserType, user.UserId);
+        unreadNotifications = notifications.Count(n => n.Status != "READ");
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "COMPLETED" => "badge-success",
+            "SCHEDULED" or "CONFIRMED" => "badge-primary",
+            "CANCELLED_BY_PATIENT" or "CANCELLED_BY_DOCTOR" => "badge-danger",
+            "MISSED" => "badge-warning",
+            _ => "badge-primary"
+        };
+    }
+}
+

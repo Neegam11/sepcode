@@ -1,0 +1,172 @@
+@page "/book-appointment"
+@inject AuthService AuthService
+@inject DoctorService DoctorService
+@inject AppointmentService AppointmentService
+@inject NavigationManager Navigation
+
+<h1 style="margin-bottom: 1.5rem;">📅 Book Appointment</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Select Doctor & Time</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div>
+            <div class="form-group">
+                <label class="form-label">Select Doctor</label>
+                <select class="form-control" @onchange="OnDoctorSelected">
+                    <option value="">Choose a doctor...</option>
+                    @foreach (var doctor in doctors)
+                    {
+                        <option value="@doctor.DoctorId">
+                            Dr. @doctor.Name - @doctor.Specialization
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Date</label>
+                <input type="date" class="form-control" value="@selectedDate" @onchange="OnDateChanged" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Appointment Type</label>
+                <select class="form-control" @bind="appointmentType">
+                    <option value="CONSULTATION">Consultation</option>
+                    <option value="FOLLOW_UP">Follow-up</option>
+                    <option value="CHECKUP">Check-up</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Available Time Slots</label>
+            @if (isLoadingSlots)
+            {
+                <p style="color: var(--text-secondary);">Loading slots...</p>
+            }
+            else if (!availableSlots.Any())
+            {
+                <p style="color: var(--text-secondary);">
+                    @(selectedDoctorId > 0 ? "No available slots for selected date." : "Select a doctor and date to see available slots.")
+                </p>
+            }
+            else
+            {
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                    @foreach (var slot in availableSlots)
+                    {
+                        <button class="btn @(selectedSlotId == slot.SlotId ? "btn-primary" : "btn-outline")"
+                                @onclick="() => selectedSlotId = slot.SlotId">
+                            @slot.StartTime - @slot.EndTime
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+        <button class="btn btn-primary" @onclick="SubmitBooking" disabled="@(!CanBook || isBooking)">
+            @if (isBooking)
+            {
+                <span>Booking...</span>
+            }
+            else
+            {
+                <span>📅 Book Appointment</span>
+            }
+        </button>
+        <button class="btn btn-outline" @onclick="GoToDashboard">
+            Cancel
+        </button>
+    </div>
+</div>
+
+@code {
+    private List<DoctorModel> doctors = new();
+    private List<SlotModel> availableSlots = new();
+    private long selectedDoctorId;
+    private long selectedSlotId;
+    private string selectedDate = DateTime.Today.ToString("yyyy-MM-dd");
+    private string appointmentType = "CONSULTATION";
+    private string? message;
+    private bool isSuccess;
+    private bool isLoadingSlots;
+    private bool isBooking;
+
+    private bool CanBook => selectedDoctorId > 0 && selectedSlotId > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctors = await DoctorService.GetAllDoctorsAsync();
+    }
+
+    private async Task OnDoctorSelected(ChangeEventArgs e)
+    {
+        if (long.TryParse(e.Value?.ToString(), out var doctorId))
+        {
+            selectedDoctorId = doctorId;
+            await LoadSlots();
+        }
+    }
+
+    private async Task OnDateChanged(ChangeEventArgs e)
+    {
+        selectedDate = e.Value?.ToString() ?? DateTime.Today.ToString("yyyy-MM-dd");
+        if (selectedDoctorId > 0)
+        {
+            await LoadSlots();
+        }
+    }
+
+    private void GoToDashboard()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+
+    private async Task LoadSlots()
+    {
+        isLoadingSlots = true;
+        selectedSlotId = 0;
+        availableSlots = await AppointmentService.GetAvailableSlotsAsync(selectedDoctorId, selectedDate);
+        isLoadingSlots = false;
+    }
+
+    private async Task SubmitBooking()
+    {
+        if (!CanBook) return;
+
+        isBooking = true;
+        message = null;
+
+        var model = new BookAppointmentModel
+        {
+            PatientId = AuthService.CurrentUser!.UserId,
+            DoctorId = selectedDoctorId,
+            SlotId = selectedSlotId,
+            Type = appointmentType
+        };
+
+        var (success, msg, _) = await AppointmentService.BookAppointmentAsync(model);
+
+        isSuccess = success;
+        message = msg;
+
+        if (success)
+        {
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/my-appointments");
+        }
+
+        isBooking = false;
+    }
+}
+

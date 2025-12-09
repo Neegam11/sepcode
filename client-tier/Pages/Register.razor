@@ -1,0 +1,86 @@
+@page "/register"
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@layout EmptyLayout
+
+<div class="login-container">
+    <div class="login-card" style="max-width: 480px;">
+        <h1 class="login-title">🏥 Patient Registration</h1>
+        <p class="login-subtitle">Create your patient account to book appointments</p>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+        }
+
+        <EditForm Model="@model" OnValidSubmit="HandleRegister">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" @bind="model.Name" placeholder="Enter your full name" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" @bind="model.Email" placeholder="Enter your email" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-control" @bind="model.Phone" placeholder="Enter your phone number" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" @bind="model.Password" placeholder="Create a password" required />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>Creating account...</span>
+                }
+                else
+                {
+                    <span>Create Account</span>
+                }
+            </button>
+        </EditForm>
+
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
+            Already have an account? <a href="/login" style="color: var(--primary-color);">Sign in</a>
+        </p>
+    </div>
+</div>
+
+@code {
+    private RegisterModel model = new();
+    private string? message;
+    private bool isSuccess;
+    private bool isLoading;
+
+    private class RegisterModel
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        message = null;
+
+        // Always register as PATIENT
+        var (success, msg) = await AuthService.RegisterAsync(
+            model.Name, model.Email, model.Phone, model.Password,
+            "PATIENT", null, null);
+
+        isSuccess = success;
+        message = msg;
+
+        if (success)
+        {
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/login");
+        }
+
+        isLoading = false;
+    }
+}

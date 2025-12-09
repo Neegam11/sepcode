@@ -1,0 +1,110 @@
+@page "/login"
+@page "/"
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@layout EmptyLayout
+
+<div class="login-container">
+    <div class="login-card">
+        <h1 class="login-title">Clinic Management System</h1>
+        <p class="login-subtitle">Sign in to your account</p>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-error">@errorMessage</div>
+        }
+
+        <div class="user-type-selector">
+            <button class="user-type-btn @(userType == "PATIENT" ? "active" : "")" @onclick="@(() => SetUserType("PATIENT"))">
+                👤 Patient
+            </button>
+            <button class="user-type-btn @(userType == "DOCTOR" ? "active" : "")" @onclick="@(() => SetUserType("DOCTOR"))">
+                👨‍⚕️ Doctor
+            </button>
+            <button class="user-type-btn @(userType == "STAFF" ? "active" : "")" @onclick="@(() => SetUserType("STAFF"))">
+                👩‍💼 Staff
+            </button>
+        </div>
+
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" @bind="loginModel.Email" placeholder="Enter your email" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" @bind="loginModel.Password" placeholder="Enter your password" required />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>Signing in...</span>
+                }
+                else
+                {
+                    <span>Sign In</span>
+                }
+            </button>
+        </EditForm>
+
+        @if (userType == "PATIENT")
+        {
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
+                Don't have an account? <a href="/register" style="color: var(--primary-color);">Register here</a>
+            </p>
+        }
+
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string userType = "PATIENT";
+    private string? errorMessage;
+    private bool isLoading;
+
+    private class LoginModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    private void SetUserType(string type)
+    {
+        userType = type;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (AuthService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        var (success, message) = await AuthService.LoginAsync(loginModel.Email, loginModel.Password, userType);
+
+        if (success)
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+        else
+        {
+            errorMessage = message;
+        }
+
+        isLoading = false;
+    }
+}
+
+@code {
+    // Empty layout for login page
+    [Layout(typeof(EmptyLayout))]
+    private class EmptyLayoutAttribute : Attribute { }
+}

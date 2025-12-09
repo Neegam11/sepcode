@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="client-tier\bin\Debug\net8.0\ClinicClient.staticwebassets.endpoints.json" />
+    <_ContentIncludedByDefault Remove="client-tier\bin\Debug\net8.0\ClinicClient.staticwebassets.runtime.json" />
+    <_ContentIncludedByDefault Remove="client-tier\bin\Debug\net8.0\emcc-props.json" />
+    <_ContentIncludedByDefault Remove="client-tier\bin\Debug\net8.0\wwwroot\_framework\blazor.boot.json" />
+    <_ContentIncludedByDefault Remove="client-tier\bin\Debug\net8.0\wwwroot\_framework\emcc-props.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\ClinicClient.csproj.nuget.dgspec.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\blazor.boot.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\blazor.build.boot-extension.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\rbcswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\rjimswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\rjsmrazor.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\rpswa.dswa.cache.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\staticwebassets.build.endpoints.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\staticwebassets.build.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\Debug\net8.0\staticwebassets.development.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\project.assets.json" />
+    <_ContentIncludedByDefault Remove="client-tier\obj\project.packagespec.json" />
+    <_ContentIncludedByDefault Remove="client-tier\App.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\BookAppointment.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\Dashboard.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\DoctorSchedule.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\Login.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\ManageAppointments.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\ManageSlots.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\MyAppointments.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\Notifications.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\Register.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\Reports.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Pages\SendNotifications.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Shared\EmptyLayout.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\Shared\MainLayout.razor" />
+    <_ContentIncludedByDefault Remove="client-tier\_Imports.razor" />
+  </ItemGroup>
+
+</Project>
+

@@ -1,0 +1,112 @@
+@inherits LayoutComponentBase
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="app-container">
+    @if (AuthService.IsAuthenticated)
+    {
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span>🏥</span> Clinic Management
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="dashboard" Match="NavLinkMatch.All">
+                            <span>📊</span> Dashboard
+                        </NavLink>
+                    </li>
+                    @if (AuthService.CurrentUser?.UserType == "PATIENT")
+                    {
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="book-appointment">
+                                <span>📅</span> Book Appointment
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="my-appointments">
+                                <span>📋</span> My Appointments
+                            </NavLink>
+                        </li>
+                    }
+                    @if (AuthService.CurrentUser?.UserType == "DOCTOR")
+                    {
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="doctor-schedule">
+                                <span>📆</span> My Schedule
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="doctor-appointments">
+                                <span>📋</span> Appointments
+                            </NavLink>
+                        </li>
+                    }
+                    @if (AuthService.CurrentUser?.UserType == "STAFF")
+                    {
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="manage-appointments">
+                                <span>📋</span> Appointments
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="manage-slots">
+                                <span>⏰</span> Manage Slots
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="send-notifications">
+                                <span>📧</span> Notifications
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="reports">
+                                <span>📈</span> Reports
+                            </NavLink>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="notifications">
+                            <span>🔔</span> Notifications
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" @onclick="Logout" style="cursor: pointer;">
+                            <span>🚪</span> Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <div class="content-header" style="margin-bottom: 1.5rem;">
+                <span style="color: var(--text-secondary);">Welcome, </span>
+                <strong>@AuthService.CurrentUser?.Name</strong>
+                <span class="badge badge-primary" style="margin-left: 0.5rem;">@AuthService.CurrentUser?.UserType</span>
+            </div>
+            @Body
+        </main>
+    }
+    else
+    {
+        @Body
+    }
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsAuthenticated && !Navigation.Uri.Contains("login") && !Navigation.Uri.Contains("register"))
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+}
+

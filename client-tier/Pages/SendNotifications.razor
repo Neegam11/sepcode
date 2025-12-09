@@ -1,0 +1,109 @@
+@page "/send-notifications"
+@inject AuthService AuthService
+@inject NotificationService NotificationService
+@inject DoctorService DoctorService
+@inject AppointmentService AppointmentService
+
+<h1 style="margin-bottom: 1.5rem;">📧 Send Notifications</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isSuccess ? "alert-success" : "alert-error")">@message</div>
+}
+
+<div class="card">
+    <h3 class="card-title" style="margin-bottom: 1rem;">Compose Notification</h3>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Recipient Type</label>
+            <select class="form-control" @bind="notification.RecipientType">
+                <option value="">Select type...</option>
+                <option value="PATIENT">Patient</option>
+                <option value="DOCTOR">Doctor</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Recipient ID</label>
+            <input type="number" class="form-control" @bind="notification.RecipientId" placeholder="Enter recipient ID" />
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label class="form-label">Notification Type</label>
+            <select class="form-control" @bind="notification.Type">
+                <option value="MANUAL">Manual</option>
+                <option value="REMINDER">Reminder</option>
+                <option value="UPDATE">Update</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Channel</label>
+            <select class="form-control" @bind="notification.Channel">
+                <option value="EMAIL">Email</option>
+                <option value="SMS">SMS</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Appointment ID (Optional)</label>
+        <input type="number" class="form-control" @bind="notification.AppointmentId" placeholder="Link to appointment (optional)" />
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Message</label>
+        <textarea class="form-control" @bind="notification.Message" rows="5" placeholder="Enter your message..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" @onclick="SendNotification" disabled="@isSending">
+        @if (isSending)
+        {
+            <span>Sending...</span>
+        }
+        else
+        {
+            <span>📤 Send Notification</span>
+        }
+    </button>
+</div>
+
+@code {
+    private NotificationModel notification = new() { Type = "MANUAL", Channel = "EMAIL" };
+    private string? message;
+    private bool isSuccess;
+    private bool isSending;
+
+    private async Task SendNotification()
+    {
+        if (string.IsNullOrEmpty(notification.RecipientType) || notification.RecipientId == 0)
+        {
+            message = "Please select recipient type and enter recipient ID";
+            isSuccess = false;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(notification.Message))
+        {
+            message = "Please enter a message";
+            isSuccess = false;
+            return;
+        }
+
+        isSending = true;
+        notification.StaffId = AuthService.CurrentUser!.UserId;
+
+        var (success, msg) = await NotificationService.SendNotificationAsync(notification);
+        isSuccess = success;
+        message = msg;
+
+        if (success)
+        {
+            notification = new NotificationModel { Type = "MANUAL", Channel = "EMAIL" };
+        }
+
+        isSending = false;
+    }
+}
+
