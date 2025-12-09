@@ -1,8 +1,5 @@
 namespace ClinicClient.Models;
 
-/// <summary>
-/// Model representing an available time slot for appointments.
-/// </summary>
 public class SlotModel
 {
     public long SlotId { get; set; }

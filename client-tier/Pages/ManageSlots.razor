@@ -3,7 +3,7 @@
 @inject StaffService StaffService
 @inject AppointmentService AppointmentService
 
-<h1 style="margin-bottom: 1.5rem;">⏰ Manage Available Slots</h1>
+<h1 style="margin-bottom: 1.5rem;">Manage Available Slots</h1>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -104,6 +104,8 @@
         }
     </div>
 </div>
+
+
 
 @code {
     private List<DoctorModel> doctors = new();

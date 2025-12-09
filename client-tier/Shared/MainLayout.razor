@@ -7,25 +7,25 @@
     {
         <aside class="sidebar">
             <div class="sidebar-logo">
-                <span>🏥</span> Clinic Management
+                <span></span> Clinic Management
             </div>
             <nav>
                 <ul class="sidebar-nav">
                     <li class="nav-item">
                         <NavLink class="nav-link" href="dashboard" Match="NavLinkMatch.All">
-                            <span>📊</span> Dashboard
+                            <span></span> Dashboard
                         </NavLink>
                     </li>
                     @if (AuthService.CurrentUser?.UserType == "PATIENT")
                     {
                         <li class="nav-item">
                             <NavLink class="nav-link" href="book-appointment">
-                                <span>📅</span> Book Appointment
+                                <span></span> Book Appointment
                             </NavLink>
                         </li>
                         <li class="nav-item">
                             <NavLink class="nav-link" href="my-appointments">
-                                <span>📋</span> My Appointments
+                                <span></span> My Appointments
                             </NavLink>
                         </li>
                     }
@@ -33,12 +33,12 @@
                     {
                         <li class="nav-item">
                             <NavLink class="nav-link" href="doctor-schedule">
-                                <span>📆</span> My Schedule
+                                <span></span> My Schedule
                             </NavLink>
                         </li>
                         <li class="nav-item">
                             <NavLink class="nav-link" href="doctor-appointments">
-                                <span>📋</span> Appointments
+                                <span></span> Appointments
                             </NavLink>
                         </li>
                     }
@@ -46,33 +46,33 @@
                     {
                         <li class="nav-item">
                             <NavLink class="nav-link" href="manage-appointments">
-                                <span>📋</span> Appointments
+                                <span></span> Appointments
                             </NavLink>
                         </li>
                         <li class="nav-item">
                             <NavLink class="nav-link" href="manage-slots">
-                                <span>⏰</span> Manage Slots
+                                <span></span> Manage Slots
                             </NavLink>
                         </li>
                         <li class="nav-item">
                             <NavLink class="nav-link" href="send-notifications">
-                                <span>📧</span> Notifications
+                                <span></span> Notifications
                             </NavLink>
                         </li>
                         <li class="nav-item">
                             <NavLink class="nav-link" href="reports">
-                                <span>📈</span> Reports
+                                <span></span> Reports
                             </NavLink>
                         </li>
                     }
                     <li class="nav-item">
                         <NavLink class="nav-link" href="notifications">
-                            <span>🔔</span> Notifications
+                            <span></span> Notifications
                         </NavLink>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" @onclick="Logout" style="cursor: pointer;">
-                            <span>🚪</span> Logout
+                            <span></span> Logout
                         </a>
                     </li>
                 </ul>
@@ -92,6 +92,8 @@
         @Body
     }
 </div>
+
+
 
 @code {
     protected override async Task OnInitializedAsync()

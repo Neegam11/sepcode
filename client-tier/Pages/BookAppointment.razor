@@ -4,7 +4,7 @@
 @inject AppointmentService AppointmentService
 @inject NavigationManager Navigation
 
-<h1 style="margin-bottom: 1.5rem;">📅 Book Appointment</h1>
+<h1 style="margin-bottom: 1.5rem;">Book Appointment</h1>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -16,7 +16,7 @@
         <h2 class="card-title">Select Doctor & Time</h2>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
         <div>
             <div class="form-group">
                 <label class="form-label">Select Doctor</label>
@@ -30,65 +30,63 @@
                     }
                 </select>
             </div>
+        <div class="form-group">
+          <label class="form-label">Select Date</label>
+                        <input type="date" class="form-control" value="@selectedDate" @onchange="OnDateChanged" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
 
-            <div class="form-group">
-                <label class="form-label">Select Date</label>
-                <input type="date" class="form-control" value="@selectedDate" @onchange="OnDateChanged" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Appointment Type</label>
-                <select class="form-control" @bind="appointmentType">
-                    <option value="CONSULTATION">Consultation</option>
-                    <option value="FOLLOW_UP">Follow-up</option>
-                    <option value="CHECKUP">Check-up</option>
-                </select>
-            </div>
-        </div>
-
-        <div>
-            <label class="form-label">Available Time Slots</label>
-            @if (isLoadingSlots)
-            {
-                <p style="color: var(--text-secondary);">Loading slots...</p>
-            }
-            else if (!availableSlots.Any())
-            {
-                <p style="color: var(--text-secondary);">
-                    @(selectedDoctorId > 0 ? "No available slots for selected date." : "Select a doctor and date to see available slots.")
-                </p>
-            }
-            else
-            {
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                    @foreach (var slot in availableSlots)
-                    {
-                        <button class="btn @(selectedSlotId == slot.SlotId ? "btn-primary" : "btn-outline")"
-                                @onclick="() => selectedSlotId = slot.SlotId">
-                            @slot.StartTime - @slot.EndTime
-                        </button>
-                    }
+                    <div class="form-group">
+                        <label class="form-label">Appointment Type</label>
+                        <select class="form-control" @bind="appointmentType">
+                            <option value="CONSULTATION">Consultation</option>
+                            <option value="FOLLOW_UP">Follow-up</option>
+                            <option value="CHECKUP">Check-up</option>
+                        </select>
+                    </div>
                 </div>
-            }
-        </div>
-    </div>
+            <div>
+                <label class="form-label">Available Time Slots</label>
+                 @if (isLoadingSlots)
+                        {
+                            <p style="color: var(--text-secondary);">Loading slots...</p>
+                        }
+                        else if (!availableSlots.Any())
+                        {
+                            <p style="color: var(--text-secondary);">
+                                @(selectedDoctorId > 0 ? "No available slots for selected date." : "Select a doctor and date to see available slots.")
+                            </p>
+                        }
+                        else
+                        {
+                          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                @foreach (var slot in availableSlots)
+                                {
+                                    <button class="btn @(selectedSlotId == slot.SlotId ? "btn-primary" : "btn-outline")"
+                                            @onclick="() => selectedSlotId = slot.SlotId">
+                                        @slot.StartTime - @slot.EndTime
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
 
-    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-        <button class="btn btn-primary" @onclick="SubmitBooking" disabled="@(!CanBook || isBooking)">
-            @if (isBooking)
-            {
-                <span>Booking...</span>
-            }
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button class="btn btn-primary" @onclick="SubmitBooking" disabled="@(!CanBook || isBooking)">
+                    @if (isBooking)
+                     {
+                     <span>Booking...</span> }
+
             else
-            {
-                <span>📅 Book Appointment</span>
-            }
-        </button>
-        <button class="btn btn-outline" @onclick="GoToDashboard">
+            { <span> Book Appointment</span> }
+            </button>
+         <button class="btn btn-outline" @onclick="GoToDashboard">
             Cancel
         </button>
     </div>
 </div>
+
+
 
 @code {
     private List<DoctorModel> doctors = new();
@@ -156,7 +154,6 @@
         };
 
         var (success, msg, _) = await AppointmentService.BookAppointmentAsync(model);
-
         isSuccess = success;
         message = msg;
 
@@ -169,4 +166,9 @@
         isBooking = false;
     }
 }
+
+
+
+
+
 

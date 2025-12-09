@@ -4,7 +4,7 @@
 @inject StaffService StaffService
 @inject DoctorService DoctorService
 
-<h1 style="margin-bottom: 1.5rem;">📋 Manage Appointments</h1>
+<h1 style="margin-bottom: 1.5rem;">Manage Appointments</h1>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -74,7 +74,7 @@
                                         </button>
                                         <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
                                                 @onclick="() => ShowReassignModal(appointment)">
-                                            🔄 Reassign
+                                             Reassign
                                         </button>
                                         <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
                                                 @onclick="() => ShowCancelModal(appointment)">
@@ -90,16 +90,16 @@
                                         </button>
                                         <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
                                                 @onclick="() => ShowReassignModal(appointment)">
-                                            🔄 Reassign
+                                             Reassign
                                         </button>
                                         <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
                                                 @onclick="() => ShowCancelModal(appointment)">
-                                            ✕ Cancel
+                                            Cancel
                                         </button>
                                     }
                                     <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;"
                                             @onclick="() => ShowUpdateModal(appointment)">
-                                        ✏️ Edit
+                                         Edit
                                     </button>
                                 </div>
                             </td>
@@ -165,7 +165,7 @@
     <div class="modal-overlay">
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header">
-                <h3 class="modal-title">🔄 Reassign Appointment</h3>
+                <h3 class="modal-title">Reassign Appointment</h3>
                 <button class="modal-close" @onclick="CloseModals">&times;</button>
             </div>
             
@@ -227,7 +227,7 @@
     <div class="modal-overlay">
         <div class="modal" style="max-width: 450px;">
             <div class="modal-header">
-                <h3 class="modal-title">❌ Cancel Appointment</h3>
+                <h3 class="modal-title">Cancel Appointment</h3>
                 <button class="modal-close" @onclick="CloseModals">&times;</button>
             </div>
             
@@ -253,6 +253,8 @@
         </div>
     </div>
 }
+
+
 
 @code {
     private List<AppointmentModel> appointments = new();

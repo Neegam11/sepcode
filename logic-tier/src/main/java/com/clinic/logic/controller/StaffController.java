@@ -29,52 +29,43 @@ public class StaffController {
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
-    @PatchMapping("/appointments/{id}/status")
-    public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointmentStatus(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body) {
-        String status = (String) body.get("status");
-        Long staffId = body.get("staffId") != null ? ((Number) body.get("staffId")).longValue() : 0L;
-        
-        return dataTierClient.updateAppointmentStatus(id, status, staffId)
-                .map(a -> ResponseEntity.ok(ApiResponse.success("Status updated", convertAppointmentToDTO(a))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update status")));
-    }
-
-    @PatchMapping("/appointments/{id}/reassign")
-    public ResponseEntity<ApiResponse<AppointmentDTO>> reassignAppointment(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body) {
-        Long newDoctorId = body.get("doctorId") != null ? ((Number) body.get("doctorId")).longValue() : 0L;
-        Long newSlotId = body.get("slotId") != null ? ((Number) body.get("slotId")).longValue() : 0L;
-        
-        return dataTierClient.reassignAppointment(id, newDoctorId, newSlotId)
-                .map(a -> ResponseEntity.ok(ApiResponse.success("Appointment reassigned to new doctor", convertAppointmentToDTO(a))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to reassign appointment")));
-    }
-
+    // PATCH /api/staff/appointments/{id} - Update appointment (RESTful: single endpoint for updates)
+    // Can handle: status change, reassignment, etc. based on body content
     @PatchMapping("/appointments/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
-        String status = body.get("status") != null ? (String) body.get("status") : "";
-        String type = body.get("type") != null ? (String) body.get("type") : "";
-        Long staffId = body.get("staffId") != null ? ((Number) body.get("staffId")).longValue() : 0L;
-        
-        if (!status.isEmpty()) {
+
+        // Handle reassignment if doctorId or slotId provided
+        if (body.containsKey("doctorId") || body.containsKey("slotId")) {
+            Long newDoctorId = body.get("doctorId") != null ? ((Number) body.get("doctorId")).longValue() : 0L;
+            Long newSlotId = body.get("slotId") != null ? ((Number) body.get("slotId")).longValue() : 0L;
+            return dataTierClient.reassignAppointment(id, newDoctorId, newSlotId)
+                    .map(a -> ResponseEntity.ok(ApiResponse.success("Appointment updated", convertAppointmentToDTO(a))))
+                    .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update appointment")));
+        }
+
+        // Handle status update
+        if (body.containsKey("status")) {
+            String status = (String) body.get("status");
+            Long staffId = body.get("staffId") != null ? ((Number) body.get("staffId")).longValue() : 0L;
             return dataTierClient.updateAppointmentStatus(id, status, staffId)
                     .map(a -> ResponseEntity.ok(ApiResponse.success("Appointment updated", convertAppointmentToDTO(a))))
                     .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update appointment")));
         }
-        return ResponseEntity.badRequest().body(ApiResponse.error("No updates provided"));
+
+        return ResponseEntity.badRequest().body(ApiResponse.error("No valid update fields provided"));
     }
 
-    @PostMapping("/appointments/{id}/cancel")
+    // DELETE /api/staff/appointments/{id} - Cancel/remove appointment (RESTful)
+    @DeleteMapping("/appointments/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> cancelAppointment(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> body) {
-        String reason = body.get("reason") != null ? (String) body.get("reason") : "Cancelled by staff";
-        
+            @RequestBody(required = false) Map<String, Object> body) {
+        String reason = (body != null && body.get("reason") != null)
+                ? (String) body.get("reason")
+                : "Cancelled by staff";
+
         return dataTierClient.cancelAppointment(id, "STAFF", reason)
                 .map(a -> ResponseEntity.ok(ApiResponse.success("Appointment cancelled", convertAppointmentToDTO(a))))
                 .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to cancel appointment")));
@@ -103,12 +94,12 @@ public class StaffController {
     @PostMapping("/slots")
     public ResponseEntity<ApiResponse<SlotDTO>> createSlot(@RequestBody SlotDTO slotDTO) {
         return dataTierClient.createSlot(
-                slotDTO.getDoctorId(),
-                slotDTO.getDate(),
-                slotDTO.getStartTime(),
-                slotDTO.getEndTime()
-        ).map(s -> ResponseEntity.ok(ApiResponse.success("Slot created", convertSlotToDTO(s))))
-         .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to create slot")));
+                        slotDTO.getDoctorId(),
+                        slotDTO.getDate(),
+                        slotDTO.getStartTime(),
+                        slotDTO.getEndTime()
+                ).map(s -> ResponseEntity.ok(ApiResponse.success("Slot created", convertSlotToDTO(s))))
+                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to create slot")));
     }
 
     @DeleteMapping("/slots/{id}")
@@ -123,18 +114,19 @@ public class StaffController {
 
     // ==================== Notification Management ====================
 
-    @PostMapping("/notifications/send")
-    public ResponseEntity<ApiResponse<NotificationDTO>> sendNotification(@RequestBody NotificationDTO dto) {
+    // POST /api/staff/notifications - Create notification (RESTful: POST to collection)
+    @PostMapping("/notifications")
+    public ResponseEntity<ApiResponse<NotificationDTO>> createNotification(@RequestBody NotificationDTO dto) {
         return dataTierClient.sendNotification(
-                dto.getAppointmentId() != null ? dto.getAppointmentId() : 0L,
-                dto.getStaffId() != null ? dto.getStaffId() : 0L,
-                dto.getRecipientId(),
-                dto.getRecipientType(),
-                dto.getMessage(),
-                dto.getType(),
-                dto.getChannel()
-        ).map(n -> ResponseEntity.ok(ApiResponse.success("Notification sent", convertNotificationToDTO(n))))
-         .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to send notification")));
+                        dto.getAppointmentId() != null ? dto.getAppointmentId() : 0L,
+                        dto.getStaffId() != null ? dto.getStaffId() : 0L,
+                        dto.getRecipientId(),
+                        dto.getRecipientType(),
+                        dto.getMessage(),
+                        dto.getType(),
+                        dto.getChannel()
+                ).map(n -> ResponseEntity.ok(ApiResponse.success("Notification created", convertNotificationToDTO(n))))
+                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to create notification")));
     }
 
     // ==================== Reports ====================
@@ -144,15 +136,15 @@ public class StaffController {
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) Long doctorId) {
-        
+
         ScheduleReportResponse report = dataTierClient.generateScheduleReport(startDate, endDate, doctorId);
-        
+
         Map<String, Object> reportData = new HashMap<>();
         reportData.put("totalAppointments", report.getTotalAppointments());
         reportData.put("completedAppointments", report.getCompletedAppointments());
         reportData.put("cancelledAppointments", report.getCancelledAppointments());
         reportData.put("missedAppointments", report.getMissedAppointments());
-        
+
         List<Map<String, Object>> doctorSummaries = report.getDoctorSummariesList().stream()
                 .map(summary -> {
                     Map<String, Object> ds = new HashMap<>();
@@ -163,7 +155,7 @@ public class StaffController {
                     return ds;
                 }).toList();
         reportData.put("doctorSummaries", doctorSummaries);
-        
+
         return ResponseEntity.ok(ApiResponse.success(reportData));
     }
 

@@ -84,23 +84,29 @@ public class DoctorController {
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
-    @PatchMapping("/{doctorId}/appointments/{appointmentId}/status")
-    public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointmentStatus(
+    // PATCH /api/doctors/{doctorId}/appointments/{appointmentId} - Update appointment (RESTful)
+    // Can update status via body: { "status": "COMPLETED" }
+    @PatchMapping("/{doctorId}/appointments/{appointmentId}")
+    public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long doctorId,
             @PathVariable Long appointmentId,
             @RequestBody java.util.Map<String, String> body) {
         String status = body.get("status");
-        return dataTierClient.updateAppointmentStatus(appointmentId, status, 0)
-                .map(appointment -> ResponseEntity.ok(ApiResponse.success("Appointment status updated", convertAppointmentToDTO(appointment))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update appointment")));
+        if (status != null) {
+            return dataTierClient.updateAppointmentStatus(appointmentId, status, 0)
+                    .map(appointment -> ResponseEntity.ok(ApiResponse.success("Appointment updated", convertAppointmentToDTO(appointment))))
+                    .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update appointment")));
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.error("No valid update fields provided"));
     }
 
-    @PostMapping("/{doctorId}/appointments/{appointmentId}/cancel")
+    // DELETE /api/doctors/{doctorId}/appointments/{appointmentId} - Cancel appointment (RESTful)
+    @DeleteMapping("/{doctorId}/appointments/{appointmentId}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> cancelAppointment(
             @PathVariable Long doctorId,
             @PathVariable Long appointmentId,
-            @RequestBody java.util.Map<String, String> body) {
-        String reason = body.getOrDefault("reason", "Cancelled by doctor");
+            @RequestBody(required = false) java.util.Map<String, String> body) {
+        String reason = body != null ? body.getOrDefault("reason", "Cancelled by doctor") : "Cancelled by doctor";
         return dataTierClient.cancelAppointment(appointmentId, "DOCTOR", reason)
                 .map(appointment -> ResponseEntity.ok(ApiResponse.success("Appointment cancelled", convertAppointmentToDTO(appointment))))
                 .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to cancel appointment")));

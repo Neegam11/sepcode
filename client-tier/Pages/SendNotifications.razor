@@ -4,7 +4,7 @@
 @inject DoctorService DoctorService
 @inject AppointmentService AppointmentService
 
-<h1 style="margin-bottom: 1.5rem;">📧 Send Notifications</h1>
+<h1 style="margin-bottom: 1.5rem;">Send Notifications</h1>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -64,10 +64,12 @@
         }
         else
         {
-            <span>📤 Send Notification</span>
+            <span>Send Notification</span>
         }
     </button>
 </div>
+
+
 
 @code {
     private NotificationModel notification = new() { Type = "MANUAL", Channel = "EMAIL" };

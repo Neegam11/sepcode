@@ -1,7 +1,6 @@
 package com.clinic.logic.controller;
 
 import com.clinic.grpc.AppointmentMessage;
-import com.clinic.grpc.AvailableSlotMessage;
 import com.clinic.logic.dto.*;
 import com.clinic.logic.service.DataTierClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+/**
+ * REST Controller for Appointment resources.
+ *
+ * RESTful API Design:
+ * - GET    /api/appointments       - List all appointments
+ * - GET    /api/appointments/{id}  - Get single appointment
+ * - POST   /api/appointments       - Create new appointment
+ * - PATCH  /api/appointments/{id}  - Partial update (status, reassign)
+ * - DELETE /api/appointments/{id}  - Cancel appointment
+ *
+ * This controller handles HTTP requests and delegates to DataTierClient,
+ * which communicates with the Data Tier via gRPC.
+ */
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
@@ -18,77 +31,114 @@ public class AppointmentController {
     @Autowired
     private DataTierClient dataTierClient;
 
+    // GET /api/appointments - Returns all appointments
     @GetMapping
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAllAppointments() {
         List<AppointmentMessage> appointments = dataTierClient.getAllAppointments();
+
+        // Convert gRPC messages to DTOs for the REST response
         List<AppointmentDTO> dtos = appointments.stream()
                 .map(this::convertToDTO)
                 .toList();
+
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
+    // GET /api/appointments/{id} - Returns a single appointment
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointmentById(@PathVariable Long id) {
-        return dataTierClient.getAppointmentById(id)
-                .map(appointment -> ResponseEntity.ok(ApiResponse.success(convertToDTO(appointment))))
-                .orElse(ResponseEntity.notFound().build());
+        Optional<AppointmentMessage> result = dataTierClient.getAppointmentById(id);
+
+        if (result.isPresent()) {
+            AppointmentDTO dto = convertToDTO(result.get());
+            return ResponseEntity.ok(ApiResponse.success(dto));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @PostMapping("/book")
-    public ResponseEntity<ApiResponse<AppointmentDTO>> bookAppointment(@RequestBody BookAppointmentDTO dto) {
-        return dataTierClient.bookAppointment(
-                        dto.getPatientId(),
-                        dto.getDoctorId(),
-                        dto.getSlotId(),
-                        dto.getType()
-                ).map(appointment -> ResponseEntity.ok(ApiResponse.success("Appointment booked successfully", convertToDTO(appointment))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to book appointment")));
+    // POST /api/appointments - Create a new appointment
+    @PostMapping
+    public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(@RequestBody BookAppointmentDTO dto) {
+        Optional<AppointmentMessage> result = dataTierClient.bookAppointment(
+                dto.getPatientId(),
+                dto.getDoctorId(),
+                dto.getSlotId(),
+                dto.getType()
+        );
+
+        if (result.isPresent()) {
+            return ResponseEntity.ok(ApiResponse.success("Appointment booked successfully", convertToDTO(result.get())));
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Failed to book appointment"));
+        }
     }
 
-    @PostMapping("/{id}/cancel")
+    // DELETE /api/appointments/{id} - Cancel an appointment
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> cancelAppointment(
             @PathVariable Long id,
-            @RequestBody CancelAppointmentDTO dto) {
-        return dataTierClient.cancelAppointment(id, dto.getCancelledBy(), dto.getReason())
-                .map(appointment -> ResponseEntity.ok(ApiResponse.success("Appointment cancelled", convertToDTO(appointment))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to cancel appointment")));
+            @RequestBody(required = false) CancelAppointmentDTO dto) {
+
+        String cancelledBy = (dto != null) ? dto.getCancelledBy() : "PATIENT";
+        String reason = (dto != null) ? dto.getReason() : "Cancelled by user";
+
+        Optional<AppointmentMessage> result = dataTierClient.cancelAppointment(id, cancelledBy, reason);
+
+        if (result.isPresent()) {
+            return ResponseEntity.ok(ApiResponse.success("Appointment cancelled", convertToDTO(result.get())));
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Failed to cancel appointment"));
+        }
     }
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointmentStatus(
+    // PATCH /api/appointments/{id} - Partial update (status change or reassignment)
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
-        String status = (String) body.get("status");
-        Long staffId = body.get("staffId") != null ? ((Number) body.get("staffId")).longValue() : 0L;
 
-        return dataTierClient.updateAppointmentStatus(id, status, staffId)
-                .map(appointment -> ResponseEntity.ok(ApiResponse.success("Status updated", convertToDTO(appointment))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update status")));
+        // Handle status update: { "status": "COMPLETED" }
+        if (body.containsKey("status")) {
+            String status = (String) body.get("status");
+            Long staffId = extractLong(body, "staffId", 0L);
+
+            Optional<AppointmentMessage> result = dataTierClient.updateAppointmentStatus(id, status, staffId);
+
+            if (result.isPresent()) {
+                return ResponseEntity.ok(ApiResponse.success("Appointment updated", convertToDTO(result.get())));
+            } else {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Failed to update appointment"));
+            }
+        }
+
+        // Handle reassignment: { "doctorId": 2 } or { "slotId": 5 }
+        if (body.containsKey("doctorId") || body.containsKey("slotId")) {
+            Long newDoctorId = extractLong(body, "doctorId", 0L);
+            Long newSlotId = extractLong(body, "slotId", 0L);
+
+            Optional<AppointmentMessage> result = dataTierClient.reassignAppointment(id, newDoctorId, newSlotId);
+
+            if (result.isPresent()) {
+                return ResponseEntity.ok(ApiResponse.success("Appointment reassigned", convertToDTO(result.get())));
+            } else {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Failed to reassign appointment"));
+            }
+        }
+
+        return ResponseEntity.badRequest().body(ApiResponse.error("No valid update fields provided"));
     }
 
-    @PatchMapping("/{id}/reassign")
-    public ResponseEntity<ApiResponse<AppointmentDTO>> reassignAppointment(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> body) {
-        Long newDoctorId = body.get("doctorId") != null ? ((Number) body.get("doctorId")).longValue() : 0L;
-        Long newSlotId = body.get("slotId") != null ? ((Number) body.get("slotId")).longValue() : 0L;
-
-        return dataTierClient.reassignAppointment(id, newDoctorId, newSlotId)
-                .map(appointment -> ResponseEntity.ok(ApiResponse.success("Appointment reassigned", convertToDTO(appointment))))
-                .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to reassign appointment")));
+    // Helper: Safely extract Long from Map (handles Integer/Long/null)
+    private Long extractLong(Map<String, Object> map, String key, Long defaultValue) {
+        Object value = map.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return defaultValue;
     }
 
-    @GetMapping("/slots/available")
-    public ResponseEntity<ApiResponse<List<SlotDTO>>> getAvailableSlots(
-            @RequestParam(required = false) Long doctorId,
-            @RequestParam(required = false) String date) {
-        List<AvailableSlotMessage> slots = dataTierClient.getAvailableSlots(doctorId, date);
-        List<SlotDTO> dtos = slots.stream()
-                .map(this::convertSlotToDTO)
-                .toList();
-        return ResponseEntity.ok(ApiResponse.success(dtos));
-    }
-
+    // Convert gRPC AppointmentMessage to REST AppointmentDTO
     private AppointmentDTO convertToDTO(AppointmentMessage message) {
         return new AppointmentDTO(
                 message.getAppointmentId(),
@@ -103,20 +153,6 @@ public class AppointmentController {
                 message.getStaffId(),
                 message.getCancellationReason(),
                 message.getPatientName(),
-                message.getDoctorName(),
-                message.getDoctorSpecialization()
-        );
-    }
-
-    private SlotDTO convertSlotToDTO(AvailableSlotMessage message) {
-        return new SlotDTO(
-                message.getSlotId(),
-                message.getDoctorId(),
-                message.getDate(),
-                message.getStartTime(),
-                message.getEndTime(),
-                message.getStatus(),
-                message.getAppointmentId(),
                 message.getDoctorName(),
                 message.getDoctorSpecialization()
         );

@@ -34,7 +34,7 @@ public class AuthService
 
             if (result?.Success == true && result.Data != null)
             {
-                // Handle JsonElement values properly
+
                 long userId = 0;
                 string userTypeValue = "";
                 string nameValue = "";

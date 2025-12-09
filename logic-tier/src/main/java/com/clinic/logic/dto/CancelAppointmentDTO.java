@@ -1,15 +1,24 @@
 package com.clinic.logic.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+/**
+ * Data Transfer Object for appointment cancellation requests.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CancelAppointmentDTO {
+
     private Long appointmentId;
-    private String cancelledBy; // PATIENT, DOCTOR
+
+    @NotBlank(message = "Cancelled by is required")
+    @Pattern(regexp = "^(PATIENT|DOCTOR|STAFF)$", message = "Cancelled by must be PATIENT, DOCTOR, or STAFF")
+    private String cancelledBy;
+
     private String reason;
 }
-

@@ -17,7 +17,6 @@ import java.util.List;
  */
 @GRpcService
 public class AppointmentServiceImpl extends AppointmentServiceGrpc.AppointmentServiceImplBase {
-
     @Autowired
     private AppointmentRepository appointmentRepository;
 
@@ -39,6 +38,7 @@ public class AppointmentServiceImpl extends AppointmentServiceGrpc.AppointmentSe
     @Override
     public void bookAppointment(BookAppointmentRequest request, StreamObserver<AppointmentMessage> responseObserver) {
         try {
+
             var patientOpt = patientRepository.findById(request.getPatientId());
             if (patientOpt.isEmpty()) {
                 responseObserver.onError(io.grpc.Status.NOT_FOUND.withDescription("Patient not found").asRuntimeException());

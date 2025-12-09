@@ -25,11 +25,12 @@ public class StaffService
         }
     }
 
+
     public async Task<(bool success, string message)> ReassignAppointmentAsync(long appointmentId, long? newDoctorId, long? newSlotId)
     {
         try
         {
-            var response = await _httpClient.PatchAsJsonAsync($"staff/appointments/{appointmentId}/reassign", new
+            var response = await _httpClient.PatchAsJsonAsync($"staff/appointments/{appointmentId}", new
             {
                 doctorId = newDoctorId ?? 0,
                 slotId = newSlotId ?? 0
@@ -43,15 +44,16 @@ public class StaffService
         }
     }
 
+
     public async Task<(bool success, string message)> UpdateAppointmentAsync(long appointmentId, string? status, string? type)
     {
         try
         {
-            var response = await _httpClient.PatchAsJsonAsync($"staff/appointments/{appointmentId}", new
-            {
-                status = status ?? "",
-                type = type ?? ""
-            });
+            var body = new Dictionary<string, object>();
+            if (!string.IsNullOrEmpty(status)) body["status"] = status;
+            if (!string.IsNullOrEmpty(type)) body["type"] = type;
+
+            var response = await _httpClient.PatchAsJsonAsync($"staff/appointments/{appointmentId}", body);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<AppointmentModel>>();
             return (result?.Success ?? false, result?.Message ?? "Failed to update");
         }
@@ -61,14 +63,16 @@ public class StaffService
         }
     }
 
+
     public async Task<(bool success, string message)> CancelAppointmentAsync(long appointmentId, string reason)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"staff/appointments/{appointmentId}/cancel", new
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"staff/appointments/{appointmentId}")
             {
-                reason = reason
-            });
+                Content = JsonContent.Create(new { reason })
+            };
+            var response = await _httpClient.SendAsync(request);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<AppointmentModel>>();
             return (result?.Success ?? false, result?.Message ?? "Failed to cancel");
         }
