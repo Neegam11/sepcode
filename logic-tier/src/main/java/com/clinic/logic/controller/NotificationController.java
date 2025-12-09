@@ -10,15 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST Controller for Notification resources.
- *
- * RESTful Design:
- * - GET   /api/notifications         - Get notifications (filter with query params)
- * - GET   /api/notifications/{id}    - Get a specific notification
- * - POST  /api/notifications         - Create/send a new notification
- * - PATCH /api/notifications/{id}    - Update notification (e.g., mark as read)
- */
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
@@ -26,8 +17,7 @@ public class NotificationController {
     @Autowired
     private DataTierClient dataTierClient;
 
-    // GET /api/notifications - Get notifications with filtering via query params
-    // Query params: recipientId, recipientType (e.g., ?recipientId=1&recipientType=PATIENT)
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotifications(
             @RequestParam(required = false) Long recipientId,
@@ -46,8 +36,6 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
-    // PATCH /api/notifications/{id} - Update a notification (e.g., mark as read)
-    // Body: { "status": "READ" }
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<NotificationDTO>> updateNotification(
             @PathVariable Long id,
@@ -63,7 +51,6 @@ public class NotificationController {
         return ResponseEntity.badRequest().body(ApiResponse.error("Invalid status value"));
     }
 
-    // POST /api/notifications - Create a new notification
     @PostMapping
     public ResponseEntity<ApiResponse<NotificationDTO>> createNotification(@RequestBody NotificationDTO dto) {
         return dataTierClient.sendNotification(

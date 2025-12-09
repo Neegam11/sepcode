@@ -18,7 +18,6 @@ public class StaffController {
     @Autowired
     private DataTierClient dataTierClient;
 
-    //Appointment Management
 
     @GetMapping("/appointments")
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAllAppointments() {
@@ -29,14 +28,12 @@ public class StaffController {
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
-    // PATCH /api/staff/appointments/{id} - Update appointment (RESTful: single endpoint for updates)
-    // Can handle: status change, reassignment, etc. based on body content
+
     @PatchMapping("/appointments/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
 
-        // Handle reassignment if doctorId or slotId provided
         if (body.containsKey("doctorId") || body.containsKey("slotId")) {
             Long newDoctorId = body.get("doctorId") != null ? ((Number) body.get("doctorId")).longValue() : 0L;
             Long newSlotId = body.get("slotId") != null ? ((Number) body.get("slotId")).longValue() : 0L;
@@ -45,7 +42,6 @@ public class StaffController {
                     .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to update appointment")));
         }
 
-        // Handle status update
         if (body.containsKey("status")) {
             String status = (String) body.get("status");
             Long staffId = body.get("staffId") != null ? ((Number) body.get("staffId")).longValue() : 0L;
@@ -57,7 +53,6 @@ public class StaffController {
         return ResponseEntity.badRequest().body(ApiResponse.error("No valid update fields provided"));
     }
 
-    // DELETE /api/staff/appointments/{id} - Cancel/remove appointment (RESTful)
     @DeleteMapping("/appointments/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> cancelAppointment(
             @PathVariable Long id,
@@ -78,7 +73,6 @@ public class StaffController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    //Slot Management
 
     @GetMapping("/slots")
     public ResponseEntity<ApiResponse<List<SlotDTO>>> getAvailableSlots(
@@ -112,9 +106,7 @@ public class StaffController {
         }
     }
 
-    //Notification Management
 
-    // POST /api/staff/notifications - Create notification (RESTful: POST to collection)
     @PostMapping("/notifications")
     public ResponseEntity<ApiResponse<NotificationDTO>> createNotification(@RequestBody NotificationDTO dto) {
         return dataTierClient.sendNotification(
@@ -129,7 +121,6 @@ public class StaffController {
                 .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to create notification")));
     }
 
-    //Reports
 
     @GetMapping("/reports/schedule")
     public ResponseEntity<ApiResponse<Map<String, Object>>> generateScheduleReport(

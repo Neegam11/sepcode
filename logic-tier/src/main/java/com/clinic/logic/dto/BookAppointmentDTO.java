@@ -6,9 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Data Transfer Object for booking appointment requests.
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

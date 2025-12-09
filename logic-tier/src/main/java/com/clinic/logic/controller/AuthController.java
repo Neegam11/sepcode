@@ -12,13 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * REST Controller for Authentication operations.
- *
- * Endpoints:
- * - POST /api/auth/login    - Authenticate user and get token
- * - POST /api/auth/register - Register new patient account
- */
+
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
@@ -26,18 +20,10 @@ public class AuthController {
 
     private final DataTierClient dataTierClient;
 
-    // Constructor injection (best practice over @Autowired field injection)
     public AuthController(DataTierClient dataTierClient) {
         this.dataTierClient = dataTierClient;
     }
 
-    /**
-     * POST /api/auth/login
-     * Authenticate a user and return a token.
-     *
-     * @param loginDTO Login credentials (email, password, userType)
-     * @return 200 OK with user data and token, or 401 Unauthorized
-     */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Map<String, Object>>> login(@Valid @RequestBody LoginDTO loginDTO) {
         LoginResponse response = dataTierClient.login(
@@ -60,20 +46,11 @@ public class AuthController {
         }
     }
 
-    /**
-     * POST /api/auth/register
-     * Register a new patient account.
-     * Note: Only patients can self-register. Doctors and Staff are pre-configured.
-     *
-     * @param registerDTO Registration details
-     * @return 201 Created on success, or 400 Bad Request / 403 Forbidden
-     */
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterDTO registerDTO) {
-        // Only patients can self-register. Doctors and Staff are pre-configured by admin.
         String userType = registerDTO.getUserType();
         if (userType != null && (userType.equalsIgnoreCase("DOCTOR") || userType.equalsIgnoreCase("STAFF"))) {
-            // 403 Forbidden - user is not allowed to perform this action
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
                     ApiResponse.error("Doctor and Staff accounts are pre-configured by the administrator. Please contact admin for access.")
             );
@@ -84,17 +61,15 @@ public class AuthController {
                 registerDTO.getEmail(),
                 registerDTO.getPhone(),
                 registerDTO.getPassword(),
-                "PATIENT", // Force user type to PATIENT for self-registration
+                "PATIENT",
                 null,
                 null
         );
 
         if (response.getSuccess()) {
-            // 201 Created for successful resource creation
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success(response.getMessage(), null));
         } else {
-            // 409 Conflict if email already exists, otherwise 400 Bad Request
             if (response.getMessage().contains("already registered")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(ApiResponse.error(response.getMessage()));

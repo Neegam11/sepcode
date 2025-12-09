@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Data Transfer Object for registration requests.
- * Note: Only patients can self-register. Doctors and Staff are pre-configured.
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
