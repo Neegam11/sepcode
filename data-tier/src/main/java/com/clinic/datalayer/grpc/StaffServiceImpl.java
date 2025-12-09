@@ -6,9 +6,7 @@ import io.grpc.stub.StreamObserver;
 import org.lognet.springboot.grpc.GRpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * gRPC service implementation for Staff operations.
- */
+
 @GRpcService
 public class StaffServiceImpl extends StaffServiceGrpc.StaffServiceImplBase {
 

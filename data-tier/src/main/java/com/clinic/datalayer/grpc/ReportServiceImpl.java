@@ -14,9 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * gRPC service implementation for Report generation.
- */
+
 @GRpcService
 public class ReportServiceImpl extends ReportServiceGrpc.ReportServiceImplBase {
 

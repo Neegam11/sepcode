@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
 
-/**
- * Doctor entity representing medical practitioners in the clinic.
- */
+
 @Entity
 @Table(name = "doctors")
 @Data

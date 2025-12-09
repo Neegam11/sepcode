@@ -18,7 +18,7 @@ public class StaffController {
     @Autowired
     private DataTierClient dataTierClient;
 
-    // ==================== Appointment Management ====================
+    //Appointment Management
 
     @GetMapping("/appointments")
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAllAppointments() {
@@ -87,7 +87,7 @@ public class StaffController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ==================== Slot Management ====================
+    //Slot Management
 
     @GetMapping("/slots")
     public ResponseEntity<ApiResponse<List<SlotDTO>>> getAvailableSlots(
@@ -121,7 +121,7 @@ public class StaffController {
         }
     }
 
-    // ==================== Notification Management ====================
+    //Notification Management
 
     @PostMapping("/notifications/send")
     public ResponseEntity<ApiResponse<NotificationDTO>> sendNotification(@RequestBody NotificationDTO dto) {
@@ -137,7 +137,7 @@ public class StaffController {
          .orElse(ResponseEntity.badRequest().body(ApiResponse.error("Failed to send notification")));
     }
 
-    // ==================== Reports ====================
+    //Reports
 
     @GetMapping("/reports/schedule")
     public ResponseEntity<ApiResponse<Map<String, Object>>> generateScheduleReport(

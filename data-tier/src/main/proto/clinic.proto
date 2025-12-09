@@ -4,7 +4,7 @@ package clinic;
 option java_package = "com.clinic.datalayer.grpc";
 option java_multiple_files = true;
 
-// ==================== Common Messages ====================
+//Common Messages
 
 message Empty {}
 
@@ -17,7 +17,7 @@ message StatusResponse {
   string message = 2;
 }
 
-// ==================== Authentication Messages ====================
+//Authentication Messages
 
 message LoginRequest {
   string email = 1;
@@ -44,7 +44,7 @@ message RegisterRequest {
   string role = 7; // For staff only
 }
 
-// ==================== Patient Messages ====================
+//Patient Messages
 
 message PatientMessage {
   int64 patientId = 1;
@@ -58,7 +58,7 @@ message PatientListResponse {
   repeated PatientMessage patients = 1;
 }
 
-// ==================== Doctor Messages ====================
+//Doctor Messages
 
 message DoctorMessage {
   int64 doctorId = 1;
@@ -72,7 +72,7 @@ message DoctorListResponse {
   repeated DoctorMessage doctors = 1;
 }
 
-// ==================== Staff Messages ====================
+//Staff Messages
 
 message StaffMessage {
   int64 staffId = 1;
@@ -86,7 +86,7 @@ message StaffListResponse {
   repeated StaffMessage staffList = 1;
 }
 
-// ==================== Appointment Messages ====================
+//Appointment Messages
 
 message AppointmentMessage {
   int64 appointmentId = 1;
@@ -100,7 +100,7 @@ message AppointmentMessage {
   string type = 9;
   int64 staffId = 10;
   string cancellationReason = 11;
-  // Nested details for convenience
+
   string patientName = 12;
   string doctorName = 13;
   string doctorSpecialization = 14;
@@ -137,7 +137,7 @@ message AppointmentFilterRequest {
   string date = 5;
 }
 
-// ==================== Available Slot Messages ====================
+//Available Slot Messages
 
 message AvailableSlotMessage {
   int64 slotId = 1;
@@ -173,7 +173,7 @@ message TimeSlot {
   string endTime = 2;
 }
 
-// ==================== Notification Messages ====================
+//Notification Messages
 
 message NotificationMessage {
   int64 notificationId = 1;
@@ -209,7 +209,7 @@ message NotificationFilterRequest {
   string type = 4;
 }
 
-// ==================== Report Messages ====================
+//Report Messages
 
 message ScheduleReportRequest {
   string startDate = 1;
@@ -232,7 +232,6 @@ message DoctorScheduleSummary {
   int32 availableSlots = 4;
 }
 
-// ==================== Services ====================
 
 // Authentication Service
 service AuthService {

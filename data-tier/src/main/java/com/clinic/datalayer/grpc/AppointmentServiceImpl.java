@@ -12,9 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/**
- * gRPC service implementation for Appointment operations.
- */
 @GRpcService
 public class AppointmentServiceImpl extends AppointmentServiceGrpc.AppointmentServiceImplBase {
 

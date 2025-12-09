@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
 
-/**
- * Staff entity representing clinic staff members.
- */
+
 @Entity
 @Table(name = "staff")
 @Data

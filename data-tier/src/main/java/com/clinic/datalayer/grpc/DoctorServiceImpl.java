@@ -6,9 +6,7 @@ import io.grpc.stub.StreamObserver;
 import org.lognet.springboot.grpc.GRpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * gRPC service implementation for Doctor operations.
- */
+
 @GRpcService
 public class DoctorServiceImpl extends DoctorServiceGrpc.DoctorServiceImplBase {
 

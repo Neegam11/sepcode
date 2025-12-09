@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.List;
 
-/**
- * Patient entity representing clinic patients.
- */
+
 @Entity
 @Table(name = "patients")
 @Data
