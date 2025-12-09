@@ -1,8 +1,5 @@
 namespace ClinicClient.Models;
 
-/// <summary>
-/// Model representing a doctor in the clinic system.
-/// </summary>
 public class DoctorModel
 {
     public long DoctorId { get; set; }

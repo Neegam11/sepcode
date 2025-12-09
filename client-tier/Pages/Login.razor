@@ -16,13 +16,13 @@
 
         <div class="user-type-selector">
             <button class="user-type-btn @(userType == "PATIENT" ? "active" : "")" @onclick="@(() => SetUserType("PATIENT"))">
-                👤 Patient
+                 Patient
             </button>
             <button class="user-type-btn @(userType == "DOCTOR" ? "active" : "")" @onclick="@(() => SetUserType("DOCTOR"))">
-                👨‍⚕️ Doctor
+                 Doctor
             </button>
             <button class="user-type-btn @(userType == "STAFF" ? "active" : "")" @onclick="@(() => SetUserType("STAFF"))">
-                👩‍💼 Staff
+                 Staff
             </button>
         </div>
 
@@ -56,6 +56,7 @@
 
     </div>
 </div>
+
 
 @code {
     private LoginModel loginModel = new();
@@ -103,8 +104,10 @@
     }
 }
 
+
+
 @code {
-    // Empty layout for login page
+
     [Layout(typeof(EmptyLayout))]
     private class EmptyLayoutAttribute : Attribute { }
 }

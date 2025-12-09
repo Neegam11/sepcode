@@ -2,7 +2,7 @@
 @inject AuthService AuthService
 @inject AppointmentService AppointmentService
 
-<h1 style="margin-bottom: 1.5rem;">📋 My Appointments</h1>
+<h1 style="margin-bottom: 1.5rem;">My Appointments</h1>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -89,6 +89,8 @@
         </div>
     </div>
 }
+
+
 
 @code {
     private List<AppointmentModel> appointments = new();

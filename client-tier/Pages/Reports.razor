@@ -2,7 +2,7 @@
 @inject StaffService StaffService
 @inject DoctorService DoctorService
 
-<h1 style="margin-bottom: 1.5rem;">📈 Schedule Reports</h1>
+<h1 style="margin-bottom: 1.5rem;">Schedule Reports</h1>
 
 <div class="card" style="margin-bottom: 1.5rem;">
     <h3 class="card-title" style="margin-bottom: 1rem;">Generate Report</h3>
@@ -33,28 +33,28 @@
 {
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon blue">📅</div>
+            <div class="stat-icon blue"></div>
             <div>
                 <div class="stat-value">@GetReportValue("totalAppointments")</div>
                 <div class="stat-label">Total Appointments</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green">✅</div>
+            <div class="stat-icon green"></div>
             <div>
                 <div class="stat-value">@GetReportValue("completedAppointments")</div>
                 <div class="stat-label">Completed</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon red">❌</div>
+            <div class="stat-icon red"></div>
             <div>
                 <div class="stat-value">@GetReportValue("cancelledAppointments")</div>
                 <div class="stat-label">Cancelled</div>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon orange">⚠️</div>
+            <div class="stat-icon orange"></div>
             <div>
                 <div class="stat-value">@GetReportValue("missedAppointments")</div>
                 <div class="stat-label">Missed</div>
@@ -94,6 +94,7 @@
         }
     </div>
 }
+
 
 @code {
     private List<DoctorModel> doctors = new();

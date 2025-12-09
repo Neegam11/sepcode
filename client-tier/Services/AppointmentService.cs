@@ -66,11 +66,12 @@ public class AppointmentService
         }
     }
 
+    // POST /api/appointments - RESTful: POST to collection creates a new resource
     public async Task<(bool success, string message, AppointmentModel? appointment)> BookAppointmentAsync(BookAppointmentModel model)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("appointments/book", model);
+            var response = await _httpClient.PostAsJsonAsync("appointments", model);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<AppointmentModel>>();
             return (result?.Success ?? false, result?.Message ?? "Failed to book", result?.Data);
         }
@@ -80,15 +81,16 @@ public class AppointmentService
         }
     }
 
+
     public async Task<(bool success, string message)> CancelAppointmentAsync(long appointmentId, string cancelledBy, string reason)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"appointments/{appointmentId}/cancel", new
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"appointments/{appointmentId}")
             {
-                cancelledBy,
-                reason
-            });
+                Content = JsonContent.Create(new { cancelledBy, reason })
+            };
+            var response = await _httpClient.SendAsync(request);
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<AppointmentModel>>();
             return (result?.Success ?? false, result?.Message ?? "Failed to cancel");
         }
@@ -98,11 +100,12 @@ public class AppointmentService
         }
     }
 
+    // PATCH /api/appointments/{id} - RESTful: PATCH for partial updates
     public async Task<(bool success, string message)> UpdateAppointmentStatusAsync(long appointmentId, string status, long staffId = 0)
     {
         try
         {
-            var response = await _httpClient.PatchAsJsonAsync($"appointments/{appointmentId}/status", new
+            var response = await _httpClient.PatchAsJsonAsync($"appointments/{appointmentId}", new
             {
                 status,
                 staffId
@@ -116,15 +119,15 @@ public class AppointmentService
         }
     }
 
+
     public async Task<List<SlotModel>> GetAvailableSlotsAsync(long? doctorId = null, string? date = null)
     {
         try
         {
-            var url = "appointments/slots/available";
-            var queryParams = new List<string>();
+            var queryParams = new List<string> { "status=available" };
             if (doctorId.HasValue) queryParams.Add($"doctorId={doctorId}");
             if (!string.IsNullOrEmpty(date)) queryParams.Add($"date={date}");
-            if (queryParams.Any()) url += "?" + string.Join("&", queryParams);
+            var url = "slots?" + string.Join("&", queryParams);
 
             var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<SlotModel>>>(url);
             return response?.Data ?? new List<SlotModel>();

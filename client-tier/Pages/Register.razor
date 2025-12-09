@@ -5,7 +5,7 @@
 
 <div class="login-container">
     <div class="login-card" style="max-width: 480px;">
-        <h1 class="login-title">🏥 Patient Registration</h1>
+        <h1 class="login-title">Patient Registration</h1>
         <p class="login-subtitle">Create your patient account to book appointments</p>
 
         @if (!string.IsNullOrEmpty(message))
@@ -47,6 +47,8 @@
         </p>
     </div>
 </div>
+
+
 
 @code {
     private RegisterModel model = new();

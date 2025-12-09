@@ -2,7 +2,7 @@
 @inject AuthService AuthService
 @inject NotificationService NotificationService
 
-<h1 style="margin-bottom: 1.5rem;">🔔 Notifications</h1>
+<h1 style="margin-bottom: 1.5rem;">Notifications</h1>
 
 <div class="card">
     @if (isLoading)
@@ -42,6 +42,8 @@
         </div>
     }
 </div>
+
+
 
 @code {
     private List<NotificationModel> notifications = new();

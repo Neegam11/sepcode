@@ -7,28 +7,28 @@
 
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon blue">📅</div>
+        <div class="stat-icon blue"></div>
         <div>
             <div class="stat-value">@totalAppointments</div>
             <div class="stat-label">Total Appointments</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon green">✅</div>
+        <div class="stat-icon green"></div>
         <div>
             <div class="stat-value">@completedAppointments</div>
             <div class="stat-label">Completed</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon orange">⏳</div>
+        <div class="stat-icon orange"></div>
         <div>
             <div class="stat-value">@upcomingAppointments</div>
             <div class="stat-label">Upcoming</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon red">🔔</div>
+        <div class="stat-icon red"></div>
         <div>
             <div class="stat-value">@unreadNotifications</div>
             <div class="stat-label">Notifications</div>
@@ -91,6 +91,8 @@
         </p>
     }
 </div>
+
+
 
 @code {
     private List<AppointmentModel> recentAppointments = new();

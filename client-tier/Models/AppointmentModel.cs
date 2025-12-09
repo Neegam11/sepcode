@@ -1,4 +1,5 @@
 namespace ClinicClient.Models;
+
 public class AppointmentModel
 {
     public long AppointmentId { get; set; }
