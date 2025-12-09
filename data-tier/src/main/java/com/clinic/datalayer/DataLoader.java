@@ -69,7 +69,7 @@ public class DataLoader implements CommandLineRunner {
             doctor6.setSpecialization("General");
             doctorRepository.save(doctor6);
 
-            System.out.println("Loaded 6 doctors into the database");
+            System.out.println("doctors added into the database");
         } else {
             System.out.println("Doctors already exist in database, skipping seed data");
         }
@@ -106,7 +106,7 @@ public class DataLoader implements CommandLineRunner {
             staff4.setRole("Manager");
             staffRepository.save(staff4);
 
-            System.out.println("Loaded 4 staff members into the database");
+            System.out.println("Staff members added into the database");
         } else {
             System.out.println("Staff already exist in database, skipping seed data");
         }
