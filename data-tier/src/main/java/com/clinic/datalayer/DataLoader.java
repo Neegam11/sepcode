@@ -21,7 +21,7 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) throws Exception {
         loadDoctors();
         loadStaff();
-        System.out.println("✅ DataLoader: Sample doctors and staff have been loaded successfully!");
+        System.out.println(" DataLoader: Sample doctors and staff have been loaded successfully!");
     }
 
     private void loadDoctors() {
