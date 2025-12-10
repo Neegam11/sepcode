@@ -8,9 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Repository for AvailableSlot entity operations.
- */
+
 public interface AvailableSlotRepository extends JpaRepository<AvailableSlot, Long> {
     List<AvailableSlot> findByDoctorDoctorId(Long doctorId);
     List<AvailableSlot> findByDate(LocalDate date);

@@ -11,19 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * REST Controller for Appointment resources.
- *
- * RESTful API Design:
- * - GET    /api/appointments       - List all appointments
- * - GET    /api/appointments/{id}  - Get single appointment
- * - POST   /api/appointments       - Create new appointment
- * - PATCH  /api/appointments/{id}  - Partial update (status, reassign)
- * - DELETE /api/appointments/{id}  - Cancel appointment
- *
- * This controller handles HTTP requests and delegates to DataTierClient,
- * which communicates with the Data Tier via gRPC.
- */
+
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
@@ -31,12 +19,10 @@ public class AppointmentController {
     @Autowired
     private DataTierClient dataTierClient;
 
-    // GET /api/appointments - Returns all appointments
     @GetMapping
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAllAppointments() {
         List<AppointmentMessage> appointments = dataTierClient.getAllAppointments();
 
-        // Convert gRPC messages to DTOs for the REST response
         List<AppointmentDTO> dtos = appointments.stream()
                 .map(this::convertToDTO)
                 .toList();
@@ -44,7 +30,6 @@ public class AppointmentController {
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
-    // GET /api/appointments/{id} - Returns a single appointment
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointmentById(@PathVariable Long id) {
         Optional<AppointmentMessage> result = dataTierClient.getAppointmentById(id);
@@ -57,7 +42,6 @@ public class AppointmentController {
         }
     }
 
-    // POST /api/appointments - Create a new appointment
     @PostMapping
     public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(@RequestBody BookAppointmentDTO dto) {
         Optional<AppointmentMessage> result = dataTierClient.bookAppointment(
@@ -74,7 +58,6 @@ public class AppointmentController {
         }
     }
 
-    // DELETE /api/appointments/{id} - Cancel an appointment
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> cancelAppointment(
             @PathVariable Long id,
@@ -92,13 +75,13 @@ public class AppointmentController {
         }
     }
 
-    // PATCH /api/appointments/{id} - Partial update (status change or reassignment)
+
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
 
-        // Handle status update: { "status": "COMPLETED" }
+
         if (body.containsKey("status")) {
             String status = (String) body.get("status");
             Long staffId = extractLong(body, "staffId", 0L);
@@ -112,7 +95,7 @@ public class AppointmentController {
             }
         }
 
-        // Handle reassignment: { "doctorId": 2 } or { "slotId": 5 }
+
         if (body.containsKey("doctorId") || body.containsKey("slotId")) {
             Long newDoctorId = extractLong(body, "doctorId", 0L);
             Long newSlotId = extractLong(body, "slotId", 0L);
@@ -129,7 +112,6 @@ public class AppointmentController {
         return ResponseEntity.badRequest().body(ApiResponse.error("No valid update fields provided"));
     }
 
-    // Helper: Safely extract Long from Map (handles Integer/Long/null)
     private Long extractLong(Map<String, Object> map, String key, Long defaultValue) {
         Object value = map.get(key);
         if (value instanceof Number) {
@@ -138,7 +120,6 @@ public class AppointmentController {
         return defaultValue;
     }
 
-    // Convert gRPC AppointmentMessage to REST AppointmentDTO
     private AppointmentDTO convertToDTO(AppointmentMessage message) {
         return new AppointmentDTO(
                 message.getAppointmentId(),

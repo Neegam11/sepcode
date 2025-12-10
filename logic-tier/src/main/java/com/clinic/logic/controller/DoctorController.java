@@ -84,8 +84,6 @@ public class DoctorController {
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
 
-    // PATCH /api/doctors/{doctorId}/appointments/{appointmentId} - Update appointment (RESTful)
-    // Can update status via body: { "status": "COMPLETED" }
     @PatchMapping("/{doctorId}/appointments/{appointmentId}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long doctorId,
@@ -100,7 +98,6 @@ public class DoctorController {
         return ResponseEntity.badRequest().body(ApiResponse.error("No valid update fields provided"));
     }
 
-    // DELETE /api/doctors/{doctorId}/appointments/{appointmentId} - Cancel appointment (RESTful)
     @DeleteMapping("/{doctorId}/appointments/{appointmentId}")
     public ResponseEntity<ApiResponse<AppointmentDTO>> cancelAppointment(
             @PathVariable Long doctorId,

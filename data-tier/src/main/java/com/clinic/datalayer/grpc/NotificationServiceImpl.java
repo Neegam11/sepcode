@@ -10,9 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-/**
- * gRPC service implementation for Notification operations.
- */
+
 @GRpcService
 public class NotificationServiceImpl extends NotificationServiceGrpc.NotificationServiceImplBase {
 

@@ -4,7 +4,6 @@ package clinic;
 option java_package = "com.clinic.grpc";
 option java_multiple_files = true;
 
-// ==================== Common Messages ====================
 
 message Empty {}
 
@@ -17,7 +16,7 @@ message StatusResponse {
   string message = 2;
 }
 
-// ==================== Authentication Messages ====================
+
 
 message LoginRequest {
   string email = 1;
@@ -39,12 +38,11 @@ message RegisterRequest {
   string email = 2;
   string phone = 3;
   string password = 4;
-  string userType = 5; // PATIENT, DOCTOR, STAFF
-  string specialization = 6; // For doctors only
-  string role = 7; // For staff only
+  string userType = 5; //PATIENT, DOCTOR, STAFF
+  string specialization = 6; //For doctors only
+  string role = 7; //For staff only
 }
 
-// ==================== Patient Messages ====================
 
 message PatientMessage {
   int64 patientId = 1;
@@ -58,7 +56,6 @@ message PatientListResponse {
   repeated PatientMessage patients = 1;
 }
 
-// ==================== Doctor Messages ====================
 
 message DoctorMessage {
   int64 doctorId = 1;
@@ -72,7 +69,6 @@ message DoctorListResponse {
   repeated DoctorMessage doctors = 1;
 }
 
-// ==================== Staff Messages ====================
 
 message StaffMessage {
   int64 staffId = 1;
@@ -86,7 +82,6 @@ message StaffListResponse {
   repeated StaffMessage staffList = 1;
 }
 
-// ==================== Appointment Messages ====================
 
 message AppointmentMessage {
   int64 appointmentId = 1;
@@ -100,7 +95,7 @@ message AppointmentMessage {
   string type = 9;
   int64 staffId = 10;
   string cancellationReason = 11;
-  // Nested details for convenience
+
   string patientName = 12;
   string doctorName = 13;
   string doctorSpecialization = 14;
@@ -137,7 +132,6 @@ message AppointmentFilterRequest {
   string date = 5;
 }
 
-// ==================== Available Slot Messages ====================
 
 message AvailableSlotMessage {
   int64 slotId = 1;
@@ -147,7 +141,7 @@ message AvailableSlotMessage {
   string endTime = 5;
   string status = 6;
   int64 appointmentId = 7;
-  // Nested details
+
   string doctorName = 8;
   string doctorSpecialization = 9;
 }
@@ -173,7 +167,6 @@ message TimeSlot {
   string endTime = 2;
 }
 
-// ==================== Notification Messages ====================
 
 message NotificationMessage {
   int64 notificationId = 1;
@@ -209,7 +202,6 @@ message NotificationFilterRequest {
   string type = 4;
 }
 
-// ==================== Report Messages ====================
 
 message ScheduleReportRequest {
   string startDate = 1;
@@ -232,16 +224,13 @@ message DoctorScheduleSummary {
   int32 availableSlots = 4;
 }
 
-// ==================== Services ====================
 
-// Authentication Service
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Register(RegisterRequest) returns (StatusResponse);
   rpc ValidateToken(IdRequest) returns (LoginResponse);
 }
 
-// Patient Service
 service PatientService {
   rpc CreatePatient(PatientMessage) returns (PatientMessage);
   rpc GetPatientById(IdRequest) returns (PatientMessage);
@@ -251,7 +240,6 @@ service PatientService {
   rpc DeletePatient(IdRequest) returns (StatusResponse);
 }
 
-// Doctor Service
 service DoctorService {
   rpc CreateDoctor(DoctorMessage) returns (DoctorMessage);
   rpc GetDoctorById(IdRequest) returns (DoctorMessage);
@@ -261,7 +249,6 @@ service DoctorService {
   rpc DeleteDoctor(IdRequest) returns (StatusResponse);
 }
 
-// Staff Service
 service StaffService {
   rpc CreateStaff(StaffMessage) returns (StaffMessage);
   rpc GetStaffById(IdRequest) returns (StaffMessage);
@@ -270,7 +257,6 @@ service StaffService {
   rpc DeleteStaff(IdRequest) returns (StatusResponse);
 }
 
-// Appointment Service
 service AppointmentService {
   rpc BookAppointment(BookAppointmentRequest) returns (AppointmentMessage);
   rpc GetAppointmentById(IdRequest) returns (AppointmentMessage);
@@ -287,7 +273,6 @@ service AppointmentService {
   rpc DeleteAppointment(IdRequest) returns (StatusResponse);
 }
 
-// Available Slot Service
 service AvailableSlotService {
   rpc CreateSlot(AvailableSlotMessage) returns (AvailableSlotMessage);
   rpc CreateMultipleSlots(CreateSlotsRequest) returns (AvailableSlotListResponse);
@@ -300,7 +285,6 @@ service AvailableSlotService {
   rpc DeleteSlot(IdRequest) returns (StatusResponse);
 }
 
-// Notification Service
 service NotificationService {
   rpc SendNotification(SendNotificationRequest) returns (NotificationMessage);
   rpc GetNotificationById(IdRequest) returns (NotificationMessage);
@@ -311,7 +295,6 @@ service NotificationService {
   rpc DeleteNotification(IdRequest) returns (StatusResponse);
 }
 
-// Report Service
 service ReportService {
   rpc GenerateScheduleReport(ScheduleReportRequest) returns (ScheduleReportResponse);
 }

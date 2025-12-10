@@ -7,9 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Data Transfer Object for notification information.
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
