@@ -8,16 +8,25 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-
-builder.Services.AddScoped(sp => new HttpClient 
-{ 
-    BaseAddress = new Uri("http://localhost:8080/api/") 
-});
-
-
+// Add Local Storage FIRST
 builder.Services.AddBlazoredLocalStorage();
 
-//Register Services
+// Configure HttpClient with JWT Authorization Handler
+builder.Services.AddScoped(sp =>
+{
+    var localStorage = sp.GetRequiredService<ILocalStorageService>();
+    var handler = new AuthorizationMessageHandler(localStorage)
+    {
+        InnerHandler = new HttpClientHandler()
+    };
+
+    return new HttpClient(handler)
+    {
+        BaseAddress = new Uri("http://localhost:8080/api/")
+    };
+});
+
+// Register Services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AppointmentService>();
 builder.Services.AddScoped<DoctorService>();
@@ -25,4 +34,3 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<StaffService>();
 
 await builder.Build().RunAsync();
-

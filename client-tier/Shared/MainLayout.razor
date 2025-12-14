@@ -5,7 +5,7 @@
 <div class="app-container">
     @if (AuthService.IsAuthenticated)
     {
-        <aside class="sidebar">
+      <aside class="sidebar">
             <div class="sidebar-logo">
                 <span></span> Clinic Management
             </div>
@@ -96,7 +96,7 @@
 
 
 @code {
-    protected override async Task OnInitializedAsync()
+  protected override async Task OnInitializedAsync()
     {
         await AuthService.InitializeAsync();
         if (!AuthService.IsAuthenticated && !Navigation.Uri.Contains("login") && !Navigation.Uri.Contains("register"))

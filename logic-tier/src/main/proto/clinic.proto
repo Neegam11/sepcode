@@ -17,7 +17,6 @@ message StatusResponse {
 }
 
 
-
 message LoginRequest {
   string email = 1;
   string password = 2;

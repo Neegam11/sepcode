@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DataLoader implements CommandLineRunner {
-
     private final DoctorRepository doctorRepository;
     private final StaffRepository staffRepository;
 
@@ -18,7 +17,6 @@ public class DataLoader implements CommandLineRunner {
         this.doctorRepository = doctorRepository;
         this.staffRepository = staffRepository;
     }
-
     @Override
     public void run(String... args) throws Exception {
         loadDoctors();
@@ -26,7 +24,6 @@ public class DataLoader implements CommandLineRunner {
         System.out.println("DataLoader: Sample doctors and staff have been loaded successfully!");
         System.out.println("DataLoader: doctors and staff have been added to the database");
     }
-
     private void loadDoctors() {
         if (doctorRepository.count() == 0) {
             // Doctor 1 - Email: sarah.johnson@clinic.com | Password: doctor@143

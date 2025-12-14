@@ -3,6 +3,7 @@ package com.clinic.logic.controller;
 import com.clinic.grpc.LoginResponse;
 import com.clinic.grpc.StatusResponse;
 import com.clinic.logic.dto.*;
+import com.clinic.logic.security.JwtUtil;
 import com.clinic.logic.service.DataTierClient;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,16 +13,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
 
     private final DataTierClient dataTierClient;
+    private final JwtUtil jwtUtil;  // ← NEW: Add JwtUtil
 
-    public AuthController(DataTierClient dataTierClient) {
+    // ← UPDATED: Constructor injection for both dependencies
+    public AuthController(DataTierClient dataTierClient, JwtUtil jwtUtil) {
         this.dataTierClient = dataTierClient;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/login")
@@ -33,11 +36,18 @@ public class AuthController {
         );
 
         if (response.getSuccess()) {
+            // ← NEW: Generate a proper JWT token instead of using the simple token
+            String jwtToken = jwtUtil.generateToken(
+                    response.getUserId(),
+                    response.getUserType(),
+                    response.getName()
+            );
+
             Map<String, Object> data = new HashMap<>();
             data.put("userId", response.getUserId());
             data.put("userType", response.getUserType());
             data.put("name", response.getName());
-            data.put("token", response.getToken());
+            data.put("token", jwtToken);  // ← CHANGED: Use JWT token
             return ResponseEntity.ok(ApiResponse.success("Login successful", data));
         } else {
             // 401 Unauthorized for invalid credentials (not 400 Bad Request)
@@ -45,7 +55,6 @@ public class AuthController {
                     .body(ApiResponse.error(response.getMessage()));
         }
     }
-
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterDTO registerDTO) {

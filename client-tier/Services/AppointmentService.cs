@@ -14,11 +14,11 @@ public class AppointmentService
 
     public async Task<List<AppointmentModel>> GetAllAppointmentsAsync()
     {
-        try
-        {
-            var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<AppointmentModel>>>("appointments");
-            return response?.Data ?? new List<AppointmentModel>();
-        }
+     try
+      {
+     var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<AppointmentModel>>>("appointments");
+     return response?.Data ?? new List<AppointmentModel>();
+       }
         catch
         {
             return new List<AppointmentModel>();
