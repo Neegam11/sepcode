@@ -256,7 +256,9 @@
 
 
 
-@code {
+@code
+ {
+
     private List<AppointmentModel> appointments = new();
     private List<AppointmentModel> filteredAppointments = new();
     private List<DoctorModel> doctors = new();
@@ -361,7 +363,7 @@
     }
 
     // Reassign Modal
-    private async Task ShowReassignModal(AppointmentModel appointment)
+    private void ShowReassignModal(AppointmentModel appointment)
     {
         selectedAppointment = appointment;
         newDoctorId = 0;
