@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-tier", "client-tier", "{A2C008F0-3658-A502-6D06-EC8BF0E7074A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClinicClient", "client-tier\ClinicClient.csproj", "{BF8D7CAA-62DB-FAA8-C9DB-152EB6396AAE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF8D7CAA-62DB-FAA8-C9DB-152EB6396AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF8D7CAA-62DB-FAA8-C9DB-152EB6396AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF8D7CAA-62DB-FAA8-C9DB-152EB6396AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF8D7CAA-62DB-FAA8-C9DB-152EB6396AAE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BF8D7CAA-62DB-FAA8-C9DB-152EB6396AAE} = {A2C008F0-3658-A502-6D06-EC8BF0E7074A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4133D942-DF54-4E35-97C9-6E9D70CB5CF4}
+	EndGlobalSection
+EndGlobal
